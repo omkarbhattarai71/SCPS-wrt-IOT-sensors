@@ -344,8 +344,8 @@ const Dashboard = ({ token, setToken }) => {
           .forEach((item) => {
             item.addEventListener("click", () => {
               const label = item.getAttribute("data-label");
-              const x = parseFloat(item.getAttribute("data-x"));
-              const y = parseFloat(item.getAttribute("data-y"));
+              // const x = parseFloat(item.getAttribute("data-x"));
+              // const y = parseFloat(item.getAttribute("data-y"));
 
               searchInput.value = label;
               suggestionsDropdown.style.display = "none";
@@ -437,7 +437,7 @@ const Dashboard = ({ token, setToken }) => {
         }
         document.removeEventListener("click", hideSuggestions);
       };
-    }, [map, token]);
+    }, [map]);
 
     return null;
   };
