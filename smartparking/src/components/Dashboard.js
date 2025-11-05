@@ -74,7 +74,7 @@ const Dashboard = ({ token, setToken }) => {
       setForecast(null);
     }
   }, [token]);
- 
+
   // Filtered Spots
   const filteredSpots = spots.filter((spot) => {
     const matchId = !searchId || spot.spot_id === parseInt(searchId);
@@ -260,7 +260,8 @@ const Dashboard = ({ token, setToken }) => {
           type="text" 
           placeholder="Search for parking place..." 
           style="
-            width: 250px; 
+            width: 100%;
+            max-width:300px; 
             padding: 8px 12px; 
             border: 1px solid #ccc; 
             border-radius: 4px 0 0 4px;
@@ -441,7 +442,7 @@ const Dashboard = ({ token, setToken }) => {
 
     return null;
   };
-  
+
   return (
     <div
       style={{
@@ -538,11 +539,12 @@ const Dashboard = ({ token, setToken }) => {
           backgroundImage: 'url("/images/bg-dashboard.jpg")',
           backgroundSize: "cover",
           backgroundPosition: "center",
-          position: "absolute",
+          backgroundRepeat: "no-repeat",
+          position: "fixed",
           top: 0,
           left: 0,
           width: "100%",
-          height: "100%",
+          height: "100vh",
           zIndex: -1,
           opacity: 0.7,
         }}
@@ -558,10 +560,11 @@ const Dashboard = ({ token, setToken }) => {
           {token && (
             <>
               <input
-                className="form-control mb-2"
+                className="form-control mb-2 mt-4"
                 placeholder="Search Spot ID"
                 value={searchId}
                 onChange={(e) => setSearchId(e.target.value)}
+                // style={{ marginTop: "10px" }}
               />
 
               <select
@@ -600,7 +603,7 @@ const Dashboard = ({ token, setToken }) => {
           <MapContainer
             center={[51.505, -0.09]}
             zoom={13}
-            style={{ height: "500px" }}
+            style={{ height: "500px", marginTop: "20px"}}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             {token && <SearchField />}
@@ -703,16 +706,19 @@ const Dashboard = ({ token, setToken }) => {
             </motion.div>
           )}
         </div>
+
+        
       </motion.div>
 
       <footer
         style={{
-          background: "linear-gradient(90deg, #1e1e1e, #2c2c2c)",
+          background: "linear-gradient(90deg, #1e1e1e, #433d3dff)",
           color: "#bdbdbd",
           fontSize: "14px",
           textAlign: "center",
           padding: "15px",
           marginTop: "20px",
+          
         }}
       >
         <p>© 2025 Smart Parking System | All Rights Reserved</p>
