@@ -5,7 +5,7 @@ import axios from "axios";
 import L from "leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
-import { database } from "../firebase";
+import { database } from "../Firebase";
 import { ref, onValue } from "firebase/database"; //off
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
