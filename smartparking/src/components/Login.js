@@ -9,10 +9,21 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 const Login = ({ setToken }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginType, setLoginType] = useState("user");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
+      if(loginType === "admin"){
+        const res = await axios.post("http://localhost:8000/api/admin/login/",{
+          email, 
+          password,
+        });
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userType", "admin");
+        setToken(res.data.token);
+        
+      }
       console.log("Login attempt started with email:", email);
       const userCredential = await signInWithEmailAndPassword(
         auth,
