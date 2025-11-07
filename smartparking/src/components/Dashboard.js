@@ -601,9 +601,9 @@ const Dashboard = ({ token, setToken }) => {
           )}
 
           <MapContainer
-            center={[51.505, -0.09]}
-            zoom={13}
-            style={{ height: "500px", marginTop: "20px"}}
+            center={[55.65326433931066, 12.569958569333638]}  
+            zoom={14}
+            style={{ height: "500px", marginTop: "20px" }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             {token && <SearchField />}
@@ -622,8 +622,9 @@ const Dashboard = ({ token, setToken }) => {
                   </Popup>
                 </Marker>
               ))}
+
             {/* Welcome message when not logged in */}
-            {!token && (
+            {/* {!token && (
               <Marker position={[51.505, -0.09]}>
                 <Popup>
                   <div style={{ textAlign: "center" }}>
@@ -645,8 +646,51 @@ const Dashboard = ({ token, setToken }) => {
                   </div>
                 </Popup>
               </Marker>
-            )}
+            )} */}
           </MapContainer>
+          {/* Call to action when logged in */}
+          {token && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{
+                backgroundColor: "rgba(0,0,0,0.6)",
+                padding: "30px",
+                borderRadius: "10px",
+                color: "white",
+                textAlign: "center",
+                marginTop: "20px",
+              }}
+            >
+              <h3>Welcome to Smart Parking System</h3>
+              <p>
+                You can now see the available parking slots and predictions with an ease. Enjoy the site developed by the team <h4>MOSK</h4>
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  onClick={() => navigate("/about")}
+                  style={{
+                    backgroundColor: "#4FC3F7",
+                    border: "none",
+                    color: "white",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Wanna view the team?
+                </button>                
+              </div>
+            </motion.div>
+          )}
 
           {/* Call to action when not logged in */}
           {!token && (
@@ -706,8 +750,6 @@ const Dashboard = ({ token, setToken }) => {
             </motion.div>
           )}
         </div>
-
-        
       </motion.div>
 
       <footer
@@ -718,7 +760,6 @@ const Dashboard = ({ token, setToken }) => {
           textAlign: "center",
           padding: "15px",
           marginTop: "20px",
-          
         }}
       >
         <p>© 2025 Smart Parking System | All Rights Reserved</p>
