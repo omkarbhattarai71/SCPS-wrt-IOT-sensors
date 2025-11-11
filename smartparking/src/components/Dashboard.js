@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -6,33 +6,37 @@ import L from "leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { database } from "../Firebase";
-import { ref, onValue } from "firebase/database"; //off
+import { ref, onValue } from "firebase/database"; 
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 
-const Dashboard = ({ token, setToken }) => {
+const Dashboard = ({ token, setToken, onLogout }) => {
   const [spots, setSpots] = useState([]);
   const [searchId, setSearchId] = useState("");
   const [forecast, setForecast] = useState(null);
   const [filter, setFilter] = useState("All");
   const navigate = useNavigate();
 
-  // console.log("Dashboard Rendered with token: ", token);
-
+  
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userType");
 
     // Check if setToken exists before calling it
-    if (typeof setToken === "function") {
+    if (onLogout && typeof onLogout === "function") {
+      onLogout();
+      console.log("onLogout called");
+    } else if(setToken && typeof setToken ==="function"){
       setToken(null);
-    } else {
-      console.warn("setToken is not available");
-      // Force page reload as fallback
+      console.log("setToken called");
+    } else{
+      console.warn("No Logout function available, using fallback");
       window.location.href = "/";
+      return;     
     }
-
     navigate("/");
   };
+
   useEffect(() => {
     if (token) {
       // Only fetch data if user is logged in
@@ -622,31 +626,7 @@ const Dashboard = ({ token, setToken }) => {
                   </Popup>
                 </Marker>
               ))}
-
-            {/* Welcome message when not logged in */}
-            {/* {!token && (
-              <Marker position={[51.505, -0.09]}>
-                <Popup>
-                  <div style={{ textAlign: "center" }}>
-                    <h5>Welcome to Smart Parking</h5>
-                    <p>Please login to view parking spots and predictions</p>
-                    <button
-                      onClick={() => navigate("/login")}
-                      style={{
-                        backgroundColor: "#4FC3F7",
-                        border: "none",
-                        color: "white",
-                        padding: "8px 16px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Login Now
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            )} */}
+            
           </MapContainer>
           {/* Call to action when logged in */}
           {token && (

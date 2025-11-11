@@ -6,7 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
-const Login = ({ setToken }) => {
+const Login = ({ setToken, setUserType}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginType, setLoginType] = useState("user");
@@ -22,26 +22,32 @@ const Login = ({ setToken }) => {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("userType", "admin");
         setToken(res.data.token);
+        setUserType("admin");
+        navigate("/admin");
+
         
       }
-      console.log("Login attempt started with email:", email);
+      else{
+      // console.log("Login attempt started with email:", email);
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-      console.log("Firebase auth successfull:", userCredential.user);
+      // console.log("Firebase auth successfull:", userCredential.user);
       const idToken = await userCredential.user.getIdToken();
 
-      console.log("Firebase ID token obtained:", idToken);
-
+      // console.log("Firebase ID token obtained:", idToken);
+      localStorage.setItem("userType", "user"); 
       setToken(idToken);
+      setUserType("user");
       alert("Logged in successfully!");
 
       navigate("/dashboard");
-    } catch (error) {
-      alert(error.message);
+    }
+    } catch (error) {      
       console.error("Login Error:", error);
+      alert(error.response?.data?.message||error.message);
     }
   };
   const handleGoogleLogin = async () => {
@@ -50,9 +56,6 @@ const Login = ({ setToken }) => {
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
-      // const res = await axios.post("http://localhost:8000/api/login/", {
-      //   token: idToken,
-      // });
       const res = await axios.post(
         "https://zoie-transrational-beamishly.ngrok-free.dev/login/",
         {
@@ -61,6 +64,7 @@ const Login = ({ setToken }) => {
       );
 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userType", "user");
       setToken(res.data.token);
       alert("Logged in successfully with Google!");
       navigate("/dashboard");
@@ -128,6 +132,15 @@ const Login = ({ setToken }) => {
             style={{ maxWidth: "400px", width: "100%" }}
           >
             <h2 className="text-center mb-3">Login</h2>
+            {/* Login type Selector */}
+            <div className="mb-3">
+              <label className="form-label">Login as:</label>
+              <select className="form-select" value={loginType} onChange={(e)=>setLoginType(e.target.value)}>
+                <option value="user">Regular User</option>
+                <option value="admin">City Operator/Admin</option>
+              </select>  
+            </div>
+
             <input
               className="form-control mb-2"
               placeholder="Email"
@@ -147,10 +160,11 @@ const Login = ({ setToken }) => {
               whileHover={{ scale: 1.05 }}
               onClick={handleLogin}
             >
-              Login
-            </motion.button>
+              {loginType === "admin" ? "Admin Login": "Login"}
+              </motion.button>
 
-            <div className="text-center mt-3">
+            {loginType === "user" &&(             
+              <div className="text-center mt-3">
               <p>or, login with</p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -165,11 +179,11 @@ const Login = ({ setToken }) => {
                 onClick={handleGoogleLogin}
               >
                 <GoogleIcon />
-                {/* <FaGoogle size={15} color="#DB4437" />
-                <span className="fw-medium text-secondary">Google</span> */}
+                <span className="fw-medium text-secondary">Google</span>
               </motion.button>
             </div>
-
+            )}
+            {loginType==="user" &&(
             <p className="text-center mt-3">
               Don't have an account?{" "}
               <motion.span
@@ -184,7 +198,9 @@ const Login = ({ setToken }) => {
                 Signup
               </motion.span>
             </p>
+            )}            
           </div>
+          
         </div>
       </motion.div>
     </div>
