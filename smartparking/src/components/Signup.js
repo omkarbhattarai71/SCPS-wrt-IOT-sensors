@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { auth } from "../firebase";
+import { auth } from "../Firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
@@ -20,6 +20,28 @@ const Signup = () => {
   };
 
   return (
+    <div
+      style={{
+        position: 'relative',
+        minHeight: '100vh',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Background image */}
+      <div
+        style={{
+          backgroundImage: 'url("/images/background.png")', 
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: -1, 
+          opacity: 0.7, 
+        }}
+      ></div>
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
@@ -68,6 +90,7 @@ const Signup = () => {
         </div>
       </div>
     </motion.div>
+    </div>
   );
 };
 

@@ -1,23 +1,76 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# =======================
+# Dependencies
+# =======================
 /node_modules
 /.pnp
 .pnp.js
+/.yarn
+/.yarn-cache
 
-# testing
-/coverage
-
-# production
+# =======================
+# Build output / Production
+# =======================
 /build
+/dist
+/.expo
+/.next
+/.nuxt
+/out
 
-# misc
-.DS_Store
+# =======================
+# Environment variables
+# =======================
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.secret
 
+# Firebase
+/firebase-debug.log
+/firebase.json
+
+# =======================
+# Logs
+# =======================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+
+# =======================
+# Testing / Coverage
+# =======================
+/coverage
+/jest-results.json
+/karma-coverage/
+
+# =======================
+# OS / Editor Files
+# =======================
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+
+# VSCode
+/.vscode/
+/.vscode/*
+
+# JetBrains IDEs
+/.idea/
+/.idea/*
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+$RECYCLE.BIN/
+ehthumbs.db
+Icon?
+
+# 
