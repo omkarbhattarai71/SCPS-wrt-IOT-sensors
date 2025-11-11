@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -6,7 +6,7 @@ import L from "leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { database } from "../Firebase";
-import { ref, onValue } from "firebase/database"; //off
+import { ref, onValue } from "firebase/database"; 
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 
@@ -17,7 +17,6 @@ const Dashboard = ({ token, setToken }) => {
   const [filter, setFilter] = useState("All");
   const navigate = useNavigate();
 
-  // console.log("Dashboard Rendered with token: ", token);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -623,30 +622,7 @@ const Dashboard = ({ token, setToken }) => {
                 </Marker>
               ))}
 
-            {/* Welcome message when not logged in */}
-            {/* {!token && (
-              <Marker position={[51.505, -0.09]}>
-                <Popup>
-                  <div style={{ textAlign: "center" }}>
-                    <h5>Welcome to Smart Parking</h5>
-                    <p>Please login to view parking spots and predictions</p>
-                    <button
-                      onClick={() => navigate("/login")}
-                      style={{
-                        backgroundColor: "#4FC3F7",
-                        border: "none",
-                        color: "white",
-                        padding: "8px 16px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Login Now
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            )} */}
+            
           </MapContainer>
           {/* Call to action when logged in */}
           {token && (

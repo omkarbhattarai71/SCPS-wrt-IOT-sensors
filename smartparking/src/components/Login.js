@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { auth } from "../Firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -50,9 +50,6 @@ const Login = ({ setToken }) => {
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
-      // const res = await axios.post("http://localhost:8000/api/login/", {
-      //   token: idToken,
-      // });
       const res = await axios.post(
         "https://zoie-transrational-beamishly.ngrok-free.dev/login/",
         {
