@@ -6,7 +6,7 @@ import L from "leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { database } from "../Firebase";
-import { ref, onValue } from "firebase/database"; 
+import { ref, onValue } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 
@@ -25,13 +25,13 @@ const Dashboard = ({ token, setToken, onLogout }) => {
     if (onLogout && typeof onLogout === "function") {
       onLogout();
       console.log("onLogout called");
-    } else if(setToken && typeof setToken ==="function"){
+    } else if (setToken && typeof setToken === "function") {
       setToken(null);
       console.log("setToken called");
-    } else{
+    } else {
       console.warn("No Logout function available, using fallback");
       window.location.href = "/";
-      return;     
+      return;
     }
     navigate("/");
   };
@@ -466,9 +466,41 @@ const Dashboard = ({ token, setToken, onLogout }) => {
           zIndex: 10,
         }}
       >
-        <a href="/" style={{ textDecoration: "none" }}>
-          <h2 style={{ color: "#4FC3F7" }}>Smart Parking Dashboard</h2>
+        <a
+          href="/"
+          style={{
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <img
+            src="/images/brand.png"
+            alt="Smart Parking Logo"
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "8px",
+              boxShadow: "0 0 10px rgba(79,195,247,0.6)",
+            }}
+          />
+          <h2
+            style={{
+              color: "#4FC3F7",
+              fontWeight: "600",
+              letterSpacing: "0.5px",
+              fontSize: "1.5rem",
+              margin: 0,
+              transition: "color 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.color = "#BBE1FA")}
+            onMouseLeave={(e) => (e.target.style.color = "#4FC3F7")}
+          >
+            Smart Parking
+          </h2>
         </a>
+
         <nav style={{ display: "flex", gap: "15px" }}>
           <button
             style={{
@@ -477,7 +509,7 @@ const Dashboard = ({ token, setToken, onLogout }) => {
               color: "#4FC3F7",
               borderRadius: "8px",
               padding: "8px 16px",
-              cursor: "pointer",
+              curosr: "pointer",
               transition: "all 0.3s ease",
             }}
             onClick={() => navigate("/about")}
@@ -518,21 +550,6 @@ const Dashboard = ({ token, setToken, onLogout }) => {
               Login
             </button>
           )}
-
-          {/* <button
-            style={{
-              backgroundColor: "#4FC3F7",
-              border: "none",
-              color: "black",
-              borderRadius: "8px",
-              padding: "8px 16px",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-            }}
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </button> */}
         </nav>
       </header>
 
@@ -604,7 +621,7 @@ const Dashboard = ({ token, setToken, onLogout }) => {
           )}
 
           <MapContainer
-            center={[55.65326433931066, 12.569958569333638]}  
+            center={[55.65326433931066, 12.569958569333638]}
             zoom={14}
             style={{ height: "500px", marginTop: "20px" }}
           >
@@ -616,8 +633,8 @@ const Dashboard = ({ token, setToken, onLogout }) => {
                 <Marker
                   key={spot.spot_id}
                   position={[
-                    51.505 + spot.spot_id * 0.001,
-                    -0.09 + spot.spot_id * 0.001,
+                    55.65326433931066 + spot.spot_id * 0.001,
+                    12.569958569333638 + spot.spot_id * 0.001,
                   ]}
                 >
                   <Popup>
@@ -625,7 +642,6 @@ const Dashboard = ({ token, setToken, onLogout }) => {
                   </Popup>
                 </Marker>
               ))}
-            
           </MapContainer>
           {/* Call to action when logged in */}
           {token && (
@@ -644,7 +660,8 @@ const Dashboard = ({ token, setToken, onLogout }) => {
             >
               <h3>Welcome to Smart Parking System</h3>
               <p>
-                You can now see the available parking slots and predictions with an ease. Enjoy the site developed by the team <h4>MOSK</h4>
+                You can now see the available parking slots and predictions with
+                an ease. Enjoy the site developed by the team <h4>MOSK</h4>
               </p>
               <div
                 style={{
@@ -666,7 +683,7 @@ const Dashboard = ({ token, setToken, onLogout }) => {
                   }}
                 >
                   Wanna view the team?
-                </button>                
+                </button>
               </div>
             </motion.div>
           )}

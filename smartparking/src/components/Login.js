@@ -6,7 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
-const Login = ({ setToken, setUserType}) => {
+const Login = ({ setToken, setUserType }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginType, setLoginType] = useState("user");
@@ -14,40 +14,55 @@ const Login = ({ setToken, setUserType}) => {
 
   const handleLogin = async () => {
     try {
-      if(loginType === "admin"){
-        const res = await axios.post("http://localhost:8000/api/admin/login/",{
-          email, 
-          password,
-        });
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("userType", "admin");
-        setToken(res.data.token);
-        setUserType("admin");
-        navigate("/admin");
+      // if(loginType === "admin"){
+      //   const res = await axios.post("http://localhost:8000/api/admin/login/",{
+      //     email,
+      //     password,
+      //   });
+      //   localStorage.setItem("token", res.data.token);
+      //   localStorage.setItem("userType", "admin");
+      //   setToken(res.data.token);
+      //   setUserType("admin");
+      //   navigate("/admin");
 
-        
+      // }
+      
+      // Local Test
+      if (loginType === "admin") {
+        // simple local check for testing (no backend needed)
+        if (email === "admin@example.com" && password === "admin123") {
+          const fakeToken = "fake-admin-token-123"; 
+          localStorage.setItem("token", fakeToken);
+          localStorage.setItem("userType", "admin");
+          setToken(fakeToken);
+          setUserType("admin");
+          alert("Logged in as admin (local test)");
+          navigate("/admin");
+        } else {
+          alert("Invalid admin credentials (use admin@example.com / admin123)");
+        }
+
+      } else {
+        // console.log("Login attempt started with email:", email);
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        // console.log("Firebase auth successfull:", userCredential.user);
+        const idToken = await userCredential.user.getIdToken();
+
+        // console.log("Firebase ID token obtained:", idToken);
+        localStorage.setItem("userType", "user");
+        setToken(idToken);
+        setUserType("user");
+        alert("Logged in successfully!");
+
+        navigate("/dashboard");
       }
-      else{
-      // console.log("Login attempt started with email:", email);
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      // console.log("Firebase auth successfull:", userCredential.user);
-      const idToken = await userCredential.user.getIdToken();
-
-      // console.log("Firebase ID token obtained:", idToken);
-      localStorage.setItem("userType", "user"); 
-      setToken(idToken);
-      setUserType("user");
-      alert("Logged in successfully!");
-
-      navigate("/dashboard");
-    }
-    } catch (error) {      
+    } catch (error) {
       console.error("Login Error:", error);
-      alert(error.response?.data?.message||error.message);
+      alert(error.response?.data?.message || error.message);
     }
   };
   const handleGoogleLogin = async () => {
@@ -135,10 +150,14 @@ const Login = ({ setToken, setUserType}) => {
             {/* Login type Selector */}
             <div className="mb-3">
               <label className="form-label">Login as:</label>
-              <select className="form-select" value={loginType} onChange={(e)=>setLoginType(e.target.value)}>
+              <select
+                className="form-select"
+                value={loginType}
+                onChange={(e) => setLoginType(e.target.value)}
+              >
                 <option value="user">Regular User</option>
                 <option value="admin">City Operator/Admin</option>
-              </select>  
+              </select>
             </div>
 
             <input
@@ -160,47 +179,46 @@ const Login = ({ setToken, setUserType}) => {
               whileHover={{ scale: 1.05 }}
               onClick={handleLogin}
             >
-              {loginType === "admin" ? "Admin Login": "Login"}
-              </motion.button>
+              {loginType === "admin" ? "Admin Login" : "Login"}
+            </motion.button>
 
-            {loginType === "user" &&(             
+            {loginType === "user" && (
               <div className="text-center mt-3">
-              <p>or, login with</p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn btn-light border d-flex align-items-center justify-content-center mx-auto"
-                style={{
-                  gap: "8px",
-                  width: "80%",
-                  maxWidth: "250px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                }}
-                onClick={handleGoogleLogin}
-              >
-                <GoogleIcon />
-                <span className="fw-medium text-secondary">Google</span>
-              </motion.button>
-            </div>
+                <p>or, login with</p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn btn-light border d-flex align-items-center justify-content-center mx-auto"
+                  style={{
+                    gap: "8px",
+                    width: "80%",
+                    maxWidth: "250px",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  }}
+                  onClick={handleGoogleLogin}
+                >
+                  <GoogleIcon />
+                  <span className="fw-medium text-secondary">Google</span>
+                </motion.button>
+              </div>
             )}
-            {loginType==="user" &&(
-            <p className="text-center mt-3">
-              Don't have an account?{" "}
-              <motion.span
-                style={{
-                  color: "#0d6efd",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                }}
-                whileHover={{ scale: 1.1 }}
-                onClick={() => navigate("/signup")}
-              >
-                Signup
-              </motion.span>
-            </p>
-            )}            
+            {loginType === "user" && (
+              <p className="text-center mt-3">
+                Don't have an account?{" "}
+                <motion.span
+                  style={{
+                    color: "#0d6efd",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => navigate("/signup")}
+                >
+                  Signup
+                </motion.span>
+              </p>
+            )}
           </div>
-          
         </div>
       </motion.div>
     </div>
