@@ -207,3 +207,5 @@ marimo/_lsp/
 _marimo_/
 
 /node_modules
+
+.DS_Store
