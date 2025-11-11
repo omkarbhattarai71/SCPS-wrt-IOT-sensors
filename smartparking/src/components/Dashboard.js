@@ -17,7 +17,6 @@ const Dashboard = ({ token, setToken, onLogout }) => {
   const [filter, setFilter] = useState("All");
   const navigate = useNavigate();
 
-  
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
