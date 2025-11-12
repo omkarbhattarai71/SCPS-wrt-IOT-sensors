@@ -6,7 +6,7 @@ import L from "leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { database } from "../Firebase";
-import { ref, onValue } from "firebase/database"; 
+import { ref, onValue } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 
@@ -37,12 +37,12 @@ const Dashboard = ({ token, setToken }) => {
       // Only fetch data if user is logged in
       const fetchSpots = async () => {
         try {
-          const res = await axios.get("http://localhost:8000/api/spots/", {
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/spots/`, {
             headers: { Authorization: `Token ${token}` },
           });
           setSpots(res.data);
 
-          const f = await axios.get("http://localhost:8000/api/forecast/", {
+          const f = await axios.get(`${process.env.REACT_APP_API_URL}/api/forecast/`, {
             headers: { Authorization: `Token ${token}` },
           });
           setForecast(f.data[0]);
@@ -133,7 +133,7 @@ const Dashboard = ({ token, setToken }) => {
                   <b style="font-size: 14px;">${firstResult.label}</b><br/>
                   <small style="color: #666;">${
                     firstResult.raw?.class || "Location"
-                  }</small>
+                }</small>
                   <div style="margin-top: 8px;">
                     <button onclick="window.dispatchEvent(new CustomEvent('zoomToLocation', { detail: { lat: ${y}, lng: ${x} } }))" 
                       style="background: #4FC3F7; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
@@ -167,11 +167,11 @@ const Dashboard = ({ token, setToken }) => {
                       <b style="font-size: 14px;">${result.label}</b><br/>
                       <small style="color: #666;">${
                         result.raw?.class || "Location"
-                      }</small>
+                    }</small>
                       <div style="margin-top: 8px;">
                         <button onclick="window.dispatchEvent(new CustomEvent('zoomToLocation', { detail: { lat: ${
                           result.y
-                        }, lng: ${result.x} } }))" 
+                    }, lng: ${result.x} } }))" 
                           style="background: #4FC3F7; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                           Zoom Here
                         </button>
@@ -563,7 +563,7 @@ const Dashboard = ({ token, setToken }) => {
                 placeholder="Search Spot ID"
                 value={searchId}
                 onChange={(e) => setSearchId(e.target.value)}
-                // style={{ marginTop: "10px" }}
+              // style={{ marginTop: "10px" }}
               />
 
               <select
@@ -600,7 +600,7 @@ const Dashboard = ({ token, setToken }) => {
           )}
 
           <MapContainer
-            center={[55.65326433931066, 12.569958569333638]}  
+            center={[55.65326433931066, 12.569958569333638]}
             zoom={14}
             style={{ height: "500px", marginTop: "20px" }}
           >
@@ -622,7 +622,7 @@ const Dashboard = ({ token, setToken }) => {
                 </Marker>
               ))}
 
-            
+
           </MapContainer>
           {/* Call to action when logged in */}
           {token && (
@@ -663,7 +663,7 @@ const Dashboard = ({ token, setToken }) => {
                   }}
                 >
                   Wanna view the team?
-                </button>                
+                </button>
               </div>
             </motion.div>
           )}
