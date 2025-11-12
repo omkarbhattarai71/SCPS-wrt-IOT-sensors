@@ -14,15 +14,15 @@ const Login = ({ setToken }) => {
 
   const handleLogin = async () => {
     try {
-      if(loginType === "admin"){
-        const res = await axios.post("http://localhost:8000/api/admin/login/",{
-          email, 
+      if (loginType === "admin") {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/admin/login/`, {
+          email,
           password,
         });
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("userType", "admin");
         setToken(res.data.token);
-        
+
       }
       console.log("Login attempt started with email:", email);
       const userCredential = await signInWithEmailAndPassword(
@@ -51,7 +51,7 @@ const Login = ({ setToken }) => {
       const idToken = await result.user.getIdToken();
 
       const res = await axios.post(
-        "https://zoie-transrational-beamishly.ngrok-free.dev/login/",
+        `${process.env.REACT_APP_API_URL}/login/`,
         {
           token: idToken,
         }
