@@ -26,12 +26,12 @@ const Login = ({ setToken, setUserType }) => {
       //   navigate("/admin");
 
       // }
-      
+
       // Local Test
       if (loginType === "admin") {
         // simple local check for testing (no backend needed)
         if (email === "admin@example.com" && password === "admin123") {
-          const fakeToken = "fake-admin-token-123"; 
+          const fakeToken = "fake-admin-token-123";
           localStorage.setItem("token", fakeToken);
           localStorage.setItem("userType", "admin");
           setToken(fakeToken);
@@ -41,7 +41,6 @@ const Login = ({ setToken, setUserType }) => {
         } else {
           alert("Invalid admin credentials (use admin@example.com / admin123)");
         }
-
       } else {
         // console.log("Login attempt started with email:", email);
         const userCredential = await signInWithEmailAndPassword(
@@ -65,27 +64,39 @@ const Login = ({ setToken, setUserType }) => {
       alert(error.response?.data?.message || error.message);
     }
   };
+
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
 
-      const res = await axios.post(
-        "https://zoie-transrational-beamishly.ngrok-free.dev/login/",
-        {
-          token: idToken,
-        }
-      );
+      // Get Google OAuth credential
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (!credential?.idToken) {
+        throw new Error("No ID token returned from Google login.");
+      }
+      const idToken = credential.idToken;
 
-      localStorage.setItem("token", res.data.token);
+      // Send to backend
+      const res = await axios.post("http://127.0.0.1:8000/login/", {
+        token: idToken,
+        providerId: "google.com",
+      });
+
+      if (!res.data?.idToken && !res.data?.token) {
+        throw new Error("Backend did not return a valid token.");
+      }
+
+      const backendToken = res.data.token || res.data.idToken;
+
+      localStorage.setItem("token", backendToken);
       localStorage.setItem("userType", "user");
-      setToken(res.data.token);
+      setToken(backendToken);
       alert("Logged in successfully with Google!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Google Login Error:", error);
-      alert(error.message);
+      alert(error.response?.data?.error?.message || error.message);
     }
   };
 
