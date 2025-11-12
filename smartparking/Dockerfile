@@ -33,12 +33,12 @@ ENV REACT_APP_FIREBASE_MEASUREMENT_ID=$REACT_APP_FIREBASE_MEASUREMENT_ID
 
 RUN npm run build
 
-# Production stage
+# Production stage - serve with Node.js
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install serve to run the production build
+# Install a simple HTTP server
 RUN npm install -g serve
 
 # Copy the built app from builder
@@ -46,8 +46,5 @@ COPY --from=builder /app/build ./build
 
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:3000 || exit 1
-
+# Serve the static build
 CMD ["serve", "-s", "build", "-l", "3000"]

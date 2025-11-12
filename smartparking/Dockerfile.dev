@@ -1,0 +1,19 @@
+# Development stage with hot reload support
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code (will be volume-mounted for hot reload)
+COPY . .
+
+# Install serve globally for development (optional, we'll use npm start)
+EXPOSE 3000
+
+# Run React dev server with polling for Docker/container environments
+CMD ["npm", "start"]
