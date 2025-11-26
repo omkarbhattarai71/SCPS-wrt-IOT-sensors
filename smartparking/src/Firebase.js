@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
+import { getFirestore } from "firebase/firestore";
 
 // Load Firebase configuration from environment variables. In Create React App
 // prefix variables with REACT_APP_ so they are embedded at build time.
@@ -31,5 +32,6 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize services
 const auth = getAuth(app);
+const db = getFirestore(app);
 const database = getDatabase(app);
-export { app, auth, database };
+export { app, auth, database, db };

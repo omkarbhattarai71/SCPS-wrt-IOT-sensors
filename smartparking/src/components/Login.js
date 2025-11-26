@@ -1,102 +1,60 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { auth } from "../Firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import axios from "axios";
+import { auth, db } from "../Firebase";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+// import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {doc, getDoc} from "firebase/firestore";
+
+async function getRoleFromUser(user) {
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if(snap.exists()){
+    return snap.data().role || "user";
+  }
+  return "user"
+  
+}
 
 const Login = ({ setToken, setUserType }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginType, setLoginType] = useState("user");
+  const [loginAsAdmin, setLoginAsAdmin] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    try {
-      // if(loginType === "admin"){
-      //   const res = await axios.post("http://localhost:8000/api/admin/login/",{
-      //     email,
-      //     password,
-      //   });
-      //   localStorage.setItem("token", res.data.token);
-      //   localStorage.setItem("userType", "admin");
-      //   setToken(res.data.token);
-      //   setUserType("admin");
-      //   navigate("/admin");
+  const loginAndRedirect = async (user) => {
+    const role = await getRoleFromUser(user);
+    localStorage.setItem("userType", role);
+    const idToken = await user.getIdToken();
+    localStorage.setItem("token", idToken);
+    setToken?.(idToken);
+    setUserType?.(role);
 
-      // }
-
-      // Local Test
-      if (loginType === "admin") {
-        // simple local check for testing (no backend needed)
-        if (email === "admin@example.com" && password === "admin123") {
-          const fakeToken = "fake-admin-token-123";
-          localStorage.setItem("token", fakeToken);
-          localStorage.setItem("userType", "admin");
-          setToken(fakeToken);
-          setUserType("admin");
-          alert("Logged in as admin (local test)");
-          navigate("/admin");
-        } else {
-          alert("Invalid admin credentials (use admin@example.com / admin123)");
-        }
-      } else {
-        // console.log("Login attempt started with email:", email);
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-        // console.log("Firebase auth successfull:", userCredential.user);
-        const idToken = await userCredential.user.getIdToken();
-
-        // console.log("Firebase ID token obtained:", idToken);
-        localStorage.setItem("userType", "user");
-        setToken(idToken);
-        setUserType("user");
-        alert("Logged in successfully!");
-
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.error("Login Error:", error);
-      alert(error.response?.data?.message || error.message);
+    if(role === "admin"){
+      navigate("/admin");
+    }else{
+      navigate("/dashboard");
     }
+
+
   };
 
-  const handleGoogleLogin = async () => {
-    try {
+  const handleEmailLogin = async () =>{
+    try{
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      await loginAndRedirect(userCred.user);
+    }catch(err){
+      console.error(err);
+      alert(err.message);
+    }
+  };
+  const handleGoogleLogin = async() =>{
+    try{
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-
-      // Get Google OAuth credential
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (!credential?.idToken) {
-        throw new Error("No ID token returned from Google login.");
-      }
-      const idToken = credential.idToken;
-
-      // Send to backend
-      const res = await axios.post("http://127.0.0.1:8000/login/", {
-        token: idToken,
-        providerId: "google.com",
-      });
-
-      if (!res.data?.idToken && !res.data?.token) {
-        throw new Error("Backend did not return a valid token.");
-      }
-
-      const backendToken = res.data.token || res.data.idToken;
-
-      localStorage.setItem("token", backendToken);
-      localStorage.setItem("userType", "user");
-      setToken(backendToken);
-      alert("Logged in successfully with Google!");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Google Login Error:", error);
-      alert(error.response?.data?.error?.message || error.message);
+      const res = await signInWithPopup(auth,  provider);
+      await loginAndRedirect(res.user);
+    }catch(err){
+      console.error(err);
+      alert(err.message);
     }
   };
 
@@ -163,8 +121,8 @@ const Login = ({ setToken, setUserType }) => {
               <label className="form-label">Login as:</label>
               <select
                 className="form-select"
-                value={loginType}
-                onChange={(e) => setLoginType(e.target.value)}
+                value={loginAsAdmin ? "admin":"user"}
+                onChange={(e) => setLoginAsAdmin(e.target.value==="admin")}
               >
                 <option value="user">Regular User</option>
                 <option value="admin">City Operator/Admin</option>
@@ -188,12 +146,12 @@ const Login = ({ setToken, setUserType }) => {
             <motion.button
               className="btn btn-primary w-100 mb-2"
               whileHover={{ scale: 1.05 }}
-              onClick={handleLogin}
+              onClick={handleEmailLogin}
             >
-              {loginType === "admin" ? "Admin Login" : "Login"}
+              {loginAsAdmin ? "Admin Login" : "Login"}
             </motion.button>
 
-            {loginType === "user" && (
+            {!loginAsAdmin && (
               <div className="text-center mt-3">
                 <p>or, login with</p>
                 <motion.button
@@ -213,7 +171,6 @@ const Login = ({ setToken, setUserType }) => {
                 </motion.button>
               </div>
             )}
-            {loginType === "user" && (
               <p className="text-center mt-3">
                 Don't have an account?{" "}
                 <motion.span
@@ -228,7 +185,7 @@ const Login = ({ setToken, setUserType }) => {
                   Signup
                 </motion.span>
               </p>
-            )}
+            
           </div>
         </div>
       </motion.div>
@@ -237,3 +194,5 @@ const Login = ({ setToken, setUserType }) => {
 };
 
 export default Login;
+
+
