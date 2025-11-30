@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import NotificationDisplay from "./components/common/NotificationDisplay";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -8,27 +10,21 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
-
-    useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-    } else {
-      localStorage.removeItem("token");
-    }
-  }, [token]);
-
-
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<DashboardPage token={token} setToken={setToken} />} />
-        <Route path="/dashboard" element={<DashboardPage token={token} setToken={setToken} />} />        
-        <Route path="/login" element={<LoginPage setToken={setToken} />} />
-        <Route path="/signup" element={<SignupPage />} />  
-        <Route path="/about" element={<AboutUs/>}/>
-      </Routes>
-    </Router>
+    <NotificationProvider>
+      <AuthProvider>
+        <Router>
+          <NotificationDisplay />
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />        
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />  
+            <Route path="/about" element={<AboutUs/>}/>
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </NotificationProvider>
   );
 }
 

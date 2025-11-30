@@ -1,14 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import BackgroundWrapper from "../Auth/BackgroundWrapper";
 import AuthCard from "../Auth/AuthCard";
 import AuthInput from "../Auth/AuthInput";
 import AuthButton from "../Auth/AuthButton";
 import AuthLink from "../Auth/AuthLink";
 import { useSignup } from "../../hooks/useSignup";
+import { useAuth } from "../../context/AuthContext";
 
 const Signup = () => {
-  const { email, setEmail, password, setPassword, loading, handleSignup } =
-    useSignup();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { handleSignup } = useSignup();
+  const { loading } = useAuth();
 
   return (
     <BackgroundWrapper>
@@ -27,7 +30,7 @@ const Signup = () => {
 
         <AuthButton
           className="btn btn-success"
-          onClick={handleSignup}
+          onClick={() => handleSignup(email, password)}
           disabled={loading}
         >
           {loading ? "Signing up..." : "Signup"}

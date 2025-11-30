@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import BackgroundWrapper from "../Auth/BackgroundWrapper";
 import AuthCard from "../Auth/AuthCard";
 import AuthInput from "../Auth/AuthInput";
@@ -6,17 +6,16 @@ import AuthButton from "../Auth/AuthButton";
 import GoogleLoginButton from "../Auth/GoogleLoginButton";
 import AuthLink from "../Auth/AuthLink";
 import { useLogin } from "../../hooks/useLogin";
+import { useAuth } from "../../context/AuthContext";
 
-const Login = ({ setToken }) => {
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    loading,
     handleLogin,
     handleGoogleLogin,
-  } = useLogin(setToken);
+  } = useLogin();
+  const { loading } = useAuth();
 
   return (
     <BackgroundWrapper>
@@ -34,7 +33,7 @@ const Login = ({ setToken }) => {
           className="form-control mb-3"
         />
 
-        <AuthButton onClick={handleLogin} disabled={loading}>
+        <AuthButton onClick={() => handleLogin(email, password)} disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </AuthButton>
 

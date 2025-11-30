@@ -1,6 +1,6 @@
 import React from "react";
+import { FcGoogle } from "react-icons/fc";
 import AuthButton from "./AuthButton";
-import GoogleIcon from "./GoogleIcon";
 
 const GoogleLoginButton = ({ onClick, loading }) => {
   return (
@@ -17,7 +17,7 @@ const GoogleLoginButton = ({ onClick, loading }) => {
         onClick={onClick}
         disabled={loading}
       >
-        <GoogleIcon />
+        <FcGoogle size={22} />
         <span className="fw-medium text-secondary">
           {loading ? "Signing in..." : "Google"}
         </span>

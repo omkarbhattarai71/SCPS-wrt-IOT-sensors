@@ -1,7 +1,7 @@
 import React from "react";
 import { TEAM_MEMBERS, AUTH_COLORS } from "../../constants/authConstants";
-import AboutUsHeader from "./AboutUsHeader";
-import AboutUsFooter from "./AboutUsFooter";
+import Header from "../common/Header";
+import Footer from "../common/Footer";
 import TeamGrid from "./TeamGrid";
 
 const AboutUs = () => {
@@ -13,9 +13,9 @@ const AboutUs = () => {
 
   return (
     <div style={containerStyle}>
-      <AboutUsHeader />
+      <Header variant="aboutUs" />
       <TeamGrid teamMembers={TEAM_MEMBERS} />
-      <AboutUsFooter />
+      <Footer variant="aboutUs" />
     </div>
   );
 };

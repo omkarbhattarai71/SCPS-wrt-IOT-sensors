@@ -1,40 +1,32 @@
-import { useState } from "react";
 import { auth } from "../Firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 
 export const useSignup = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { setToken, setLoading } = useAuth();
+  const { showError, showSuccess } = useNotification();
 
-  const handleSignup = async () => {
+  const handleSignup = async (email, password) => {
     setLoading(true);
-    setError(null);
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert("Signed up successfully!");
-      navigate("/login");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
+      
+      setToken(idToken);
+      showSuccess("Account created successfully!");
+      navigate("/dashboard");
     } catch (err) {
       const errorMessage = err.message || "Signup failed. Please try again.";
-      setError(errorMessage);
-      alert(errorMessage);
-      console.error("Signup Error:", err);
-    } finally {
+      showError(errorMessage);
       setLoading(false);
     }
   };
 
   return {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    loading,
-    error,
     handleSignup,
   };
 };
