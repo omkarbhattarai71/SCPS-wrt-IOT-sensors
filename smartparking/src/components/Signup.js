@@ -1,97 +1,13 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { auth } from "../Firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+/**
+ * Signup Component
+ * 
+ * Refactored version with modular architecture:
+ * - useSignup custom hook for authentication logic
+ * - Reusable Auth components (AuthCard, AuthInput, AuthButton, etc.)
+ * - BackgroundWrapper for consistent styling
+ * - Proper loading and error states
+ * - Automatic redirect to login after successful signup
+ */
 
-const Signup = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+export { default } from "./Signup/index";
 
-  const handleSignup = async () => {
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert("Signed up successfully!");
-    } catch (error) {
-      alert(error.message);
-      console.error("Signup Error:", error);
-    }
-  };
-
-  return (
-    <div
-      style={{
-        position: 'relative',
-        minHeight: '100vh',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Background image */}
-      <div
-        style={{
-          backgroundImage: 'url("/images/background.png")', 
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: -1, 
-          opacity: 0.7, 
-        }}
-      ></div>
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100vh" }}
-      >
-        <div className="card p-4" style={{ maxWidth: "400px", width: "100%" }}>
-          <h2>Signup</h2>
-          <input
-            className="form-control mb-2"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            className="form-control mb-2"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <motion.button
-            className="btn btn-success"
-            whileHover={{ scale: 1.05 }}
-            onClick={handleSignup}
-          >
-            Signup
-          </motion.button>
-          <p className="text-center mt-3">
-            Already have an account?{" "}
-            <motion.span
-              style={{
-                color: "#0d6efd",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-              whileHover={{ scale: 1.1 }}
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </motion.span>
-          </p>
-        </div>
-      </div>
-    </motion.div>
-    </div>
-  );
-};
-
-export default Signup;
