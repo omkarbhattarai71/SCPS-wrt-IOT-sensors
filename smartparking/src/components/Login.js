@@ -15,7 +15,7 @@ const Login = ({ setToken }) => {
   const handleLogin = async () => {
     try {
       if (loginType === "admin") {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/admin/login/`, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/login/`, {
           email,
           password,
         });
@@ -48,7 +48,8 @@ const Login = ({ setToken }) => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const idToken = await credential.idToken;
 
       const res = await axios.post(
         `${process.env.REACT_APP_API_URL}/login/`,
@@ -57,8 +58,8 @@ const Login = ({ setToken }) => {
         }
       );
 
-      localStorage.setItem("token", res.data.token);
-      setToken(res.data.token);
+      localStorage.setItem("token", res.data.idToken);
+      setToken(res.data.idToken);
       alert("Logged in successfully with Google!");
       navigate("/dashboard");
     } catch (error) {
