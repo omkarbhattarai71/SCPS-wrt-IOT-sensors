@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from "../../constants/parkingConstants";
 import "leaflet/dist/leaflet.css";
+import "./ParkingMap.css";
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -10,6 +11,18 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+// Custom icon for selected marker
+const selectedIcon = new L.Icon({
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  iconSize: [35, 51],
+  iconAnchor: [17, 51],
+  popupAnchor: [1, -34],
+  shadowSize: [51, 51],
+  className: 'selected-marker'
 });
 
 // Component to fit map bounds to markers
@@ -28,27 +41,43 @@ const FitBounds = ({ parkingLots }) => {
   return null;
 };
 
-const ParkingMap = ({ token, parkingLots }) => {
+const ParkingMap = ({ token, parkingLots, selectedLot, onSelectLot }) => {
   return (
     <MapContainer
       center={DEFAULT_MAP_CENTER}
       zoom={DEFAULT_MAP_ZOOM}
-      style={{ height: "calc(100vh - 180px)", width: "100%" }}
+      style={{ height: "100%", width: "100%" }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <FitBounds parkingLots={parkingLots} />
       {token &&
-        parkingLots.map((lot) => (
-          <Marker
-            key={lot.id}
-            position={[lot.location.latitude, lot.location.longitude]}
-          >
-            <Popup>
-              <strong>{lot.name}</strong><br />
-              {lot.address}
-            </Popup>
-          </Marker>
-        ))}
+        parkingLots.map((lot) => {
+          const isSelected = selectedLot?.id === lot.id;
+          const markerProps = {
+            key: lot.id,
+            position: [lot.location.latitude, lot.location.longitude],
+            eventHandlers: {
+              click: () => onSelectLot(lot)
+            }
+          };
+          
+          if (isSelected) {
+            markerProps.icon = selectedIcon;
+          }
+
+          else {
+            markerProps.icon = new L.Icon.Default();
+          }
+          
+          return (
+            <Marker {...markerProps}>
+              <Popup>
+                <strong>{lot.name}</strong><br />
+                {lot.address}
+              </Popup>
+            </Marker>
+          );
+        })}
     </MapContainer>
   );
 };

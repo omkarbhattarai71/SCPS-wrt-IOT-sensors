@@ -1,6 +1,4 @@
-import ParkingLotActions from "./ParkingLotActions";
-
-const ParkingLotList = ({ parkingLots, loading, onSelectLot, onAdd, onDelete, onManage }) => {
+const ParkingLotList = ({ parkingLots, loading, selectedLot, onSelectLot, onAdd }) => {
     return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -18,17 +16,19 @@ const ParkingLotList = ({ parkingLots, loading, onSelectLot, onAdd, onDelete, on
       (
         <ul className="list-group">
           {Array.isArray(parkingLots) && parkingLots.map((lot) => (
-            <li key={lot.id} className="list-group-item d-flex justify-content-between align-items-center">
-              <span onClick={() => onSelectLot(lot)} style={{ cursor: 'pointer', flex: 1 }}>
+            <li 
+              key={lot.id} 
+              className={`list-group-item ${selectedLot?.id === lot.id ? 'active' : ''}`}
+              onClick={() => onSelectLot(lot)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div>
                 {lot.name}
                 <br />
-                <small className="text-muted">{lot.address}</small>
-              </span>
-              <ParkingLotActions 
-                parkingLot={lot}
-                onDelete={onDelete}
-                onManage={onManage}
-              />
+                <small className={selectedLot?.id === lot.id ? 'text-white-50' : 'text-muted'}>
+                  {lot.address}
+                </small>
+              </div>
             </li>
           ))}
         </ul>

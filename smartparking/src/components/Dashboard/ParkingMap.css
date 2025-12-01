@@ -1,0 +1,4 @@
+/* Add blue tint to selected marker */
+.selected-marker {
+  filter: hue-rotate(200deg) saturate(2);
+}

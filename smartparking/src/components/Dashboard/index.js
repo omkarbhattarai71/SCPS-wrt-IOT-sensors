@@ -7,6 +7,7 @@ import { useAdminParkingLots } from "../../hooks/useAdminParkingLots";
 import Header from "../common/Header";
 import ParkingLotList from "./ParkingLotList";
 import ParkingMap from "./ParkingMap";
+import ManageParkingLot from "./ManageParkingLot";
 import Footer from "../common/Footer";
 import AddParkingLotModal from "./AddParkingLotModal";
 
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const { showSuccess, showError } = useNotification();
   const { parkingLots, loading } = useAdminParkingLots();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedLot, setSelectedLot] = useState(null);
 
   const handleLogout = () => {
     setToken(null);
@@ -53,8 +55,31 @@ const Dashboard = () => {
     }
   };
 
+  const handleUpdateLot = async (lotId, formData) => {
+    try {
+      const response = await fetch(process.env.REACT_APP_API_URL + "/cadmin/parking-lots/", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: lotId, ...formData })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update parking lot");
+      }
+
+      showSuccess("Parking lot updated successfully!");
+      window.location.reload();
+    } catch (error) {
+      showError(error.message || "Failed to update parking lot");
+      console.error("Error updating parking lot:", error);
+    }
+  };
+
   const handleDeleteLot = async (lot) => {
-    console.log("Delete parking lot:", lot);
     try {
       const response = await fetch(process.env.REACT_APP_API_URL + `/cadmin/parking-lots/`, {
         method: "DELETE",
@@ -70,18 +95,12 @@ const Dashboard = () => {
       }
 
       showSuccess("Parking lot deleted successfully!");
-      
-      // Trigger refetch of parking lots list
+      setSelectedLot(null);
       window.location.reload();
     } catch (error) {
       showError(error.message || "Failed to delete parking lot");
       console.error("Error deleting parking lot:", error);
     }
-  };
-
-  const handleManageLot = (lot) => {
-    console.log("Manage parking lot:", lot);
-    // TODO: Implement manage functionality
   };
 
 
@@ -119,18 +138,31 @@ const Dashboard = () => {
         <div className="container-fluid my-4">
           <h1 className="text-center text-white mb-4">Parking Lots Dashboard</h1>
           <div className="row" style={{ minHeight: "calc(100vh - 250px)" }}>
-            <div className="col-md-4" style={{ maxHeight: "calc(100vh - 180px)", overflowY: "auto" }}>
-              <ParkingLotList 
-                parkingLots={parkingLots}
-                loading={loading}
-                onSelectLot={(lot) => console.log("Selected lot:", lot)}
-                onAdd={handleAddLot}
-                onDelete={handleDeleteLot}
-                onManage={handleManageLot}
-              />
+            <div className="col-md-4">
+              <div style={{ height: "60%", marginBottom: "20px", maxHeight: "calc(60vh - 150px)", overflowY: "auto" }}>
+                <ParkingLotList 
+                  parkingLots={parkingLots}
+                  loading={loading}
+                  selectedLot={selectedLot}
+                  onSelectLot={setSelectedLot}
+                  onAdd={handleAddLot}
+                />
+              </div>
+              <div style={{ height: "38%" }}>
+                <ManageParkingLot 
+                  selectedLot={selectedLot}
+                  onUpdate={handleUpdateLot}
+                  onDelete={handleDeleteLot}
+                />
+              </div>
             </div>
-            <div className="col-md-8">
-              <ParkingMap token={token} parkingLots={parkingLots} />
+            <div className="col-md-8" style={{ height: "calc(100vh - 180px)" }}>
+              <ParkingMap 
+                token={token} 
+                parkingLots={parkingLots}
+                selectedLot={selectedLot}
+                onSelectLot={setSelectedLot}
+              />
             </div>
           </div>
         </div>
