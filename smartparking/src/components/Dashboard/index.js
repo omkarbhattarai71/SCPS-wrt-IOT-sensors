@@ -51,9 +51,30 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteLot = (lot) => {
+  const handleDeleteLot = async (lot) => {
     console.log("Delete parking lot:", lot);
-    // TODO: Implement delete functionality
+    try {
+      const response = await fetch(process.env.REACT_APP_API_URL + `/cadmin/parking-lots/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: lot.id })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete parking lot");
+      }
+
+      showSuccess("Parking lot deleted successfully!");
+      
+      // Trigger refetch of parking lots list
+      window.location.reload();
+    } catch (error) {
+      showError(error.message || "Failed to delete parking lot");
+      console.error("Error deleting parking lot:", error);
+    }
   };
 
   const handleManageLot = (lot) => {
