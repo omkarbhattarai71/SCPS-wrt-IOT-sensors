@@ -6,6 +6,8 @@ import { useNotification } from '../../context/NotificationContext';
 const ManageSpotsModal = ({ show, onClose, parkingLot }) => {
   const [spots, setSpots] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [newAuthCode, setNewAuthCode] = useState(null);
+  const [showAuthCodeModal, setShowAuthCodeModal] = useState(false);
   const { token } = useAuth();
   const { showError, showSuccess } = useNotification();
 
@@ -61,12 +63,32 @@ const ManageSpotsModal = ({ show, onClose, parkingLot }) => {
         throw new Error('Failed to add parking spot');
       }
 
+      const data = await response.json();
+      
+      // Show the auth code modal with the full token
+      if (data.parking_spot?.auth_code) {
+        setNewAuthCode(data.parking_spot.auth_code);
+        setShowAuthCodeModal(true);
+      }
+      
       showSuccess('Parking spot added successfully!');
       fetchSpots();
     } catch (error) {
       showError(error.message || 'Failed to add parking spot');
       console.error('Error adding spot:', error);
     }
+  };
+
+  const handleCopyAuthCode = () => {
+    if (newAuthCode) {
+      navigator.clipboard.writeText(newAuthCode);
+      showSuccess('Auth code copied to clipboard!');
+    }
+  };
+
+  const handleCloseAuthCodeModal = () => {
+    setShowAuthCodeModal(false);
+    setNewAuthCode(null);
   };
 
   const handleDeleteSpot = async (spotId) => {
@@ -103,7 +125,74 @@ const ManageSpotsModal = ({ show, onClose, parkingLot }) => {
 
   return (
     <AnimatePresence>
+      {/* Auth Code Display Modal */}
+      {showAuthCodeModal && newAuthCode && (
+        <div
+          key="auth-code-modal"
+          className="modal show d-block"
+          style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1060 }}
+          onClick={handleCloseAuthCodeModal}
+        >
+          <motion.div
+            className="modal-dialog modal-dialog-centered"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content border-warning" style={{ borderWidth: '3px' }}>
+              <div className="modal-header bg-warning">
+                <h5 className="modal-title">
+                  <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                  Save Authentication Code
+                </h5>
+              </div>
+              <div className="modal-body">
+                <div className="alert alert-warning mb-3">
+                  <strong>⚠️ Important:</strong> This authentication code will only be shown once. 
+                  Make sure to copy and save it securely before closing this window.
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Authentication Code:</label>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control font-monospace"
+                      value={newAuthCode}
+                      readOnly
+                      style={{ fontSize: '0.9rem' }}
+                    />
+                    <button
+                      className="btn btn-outline-primary"
+                      type="button"
+                      onClick={handleCopyAuthCode}
+                    >
+                      <i className="bi bi-clipboard"></i> Copy
+                    </button>
+                  </div>
+                </div>
+                <p className="text-muted small mb-0">
+                  <i className="bi bi-info-circle me-1"></i>
+                  This code is used by IoT sensors to authenticate and send parking spot status updates.
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleCloseAuthCodeModal}
+                >
+                  I've Saved the Code
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Main Manage Spots Modal */}
       <div
+        key="manage-spots-modal"
         className="modal show d-block"
         style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         onClick={onClose}
@@ -160,7 +249,7 @@ const ManageSpotsModal = ({ show, onClose, parkingLot }) => {
                           className="list-group-item d-flex justify-content-between align-items-center"
                         >
                           <div>
-                            <strong>Spot #{spot.spot_number || spot.id}</strong>
+                            <strong>{spot.auth_code_prefix}...</strong>
                             <span className="ms-3">
                               <span
                                 className={`badge ${

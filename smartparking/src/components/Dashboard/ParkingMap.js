@@ -54,7 +54,6 @@ const ParkingMap = ({ token, parkingLots, selectedLot, onSelectLot }) => {
         parkingLots.map((lot) => {
           const isSelected = selectedLot?.id === lot.id;
           const markerProps = {
-            key: lot.id,
             position: [lot.location.latitude, lot.location.longitude],
             eventHandlers: {
               click: () => onSelectLot(lot)
@@ -70,7 +69,7 @@ const ParkingMap = ({ token, parkingLots, selectedLot, onSelectLot }) => {
           }
           
           return (
-            <Marker {...markerProps}>
+            <Marker key={lot.id} {...markerProps}>
               <Popup>
                 <strong>{lot.name}</strong><br />
                 {lot.address}
