@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import ManageSpotsModal from './ManageSpotsModal';
 
 const ManageParkingLot = ({ selectedLot, onUpdate, onDelete }) => {
+  const [showSpotsModal, setShowSpotsModal] = useState(false);
   const handleDelete = () => {
     if (selectedLot && window.confirm(`Are you sure you want to delete "${selectedLot.name}"?`)) {
       onDelete(selectedLot);
@@ -47,6 +49,16 @@ const ManageParkingLot = ({ selectedLot, onUpdate, onDelete }) => {
           </p>
         </div>
 
+        <div className="mb-3">
+          <button
+            type="button"
+            className="btn btn-sm btn-info w-100"
+            onClick={() => setShowSpotsModal(true)}
+          >
+            Manage Spots
+          </button>
+        </div>
+
         <div className="d-flex gap-2">
           <button 
             type="button" 
@@ -65,6 +77,12 @@ const ManageParkingLot = ({ selectedLot, onUpdate, onDelete }) => {
           </button>
         </div>
       </div>
+
+      <ManageSpotsModal
+        show={showSpotsModal}
+        onClose={() => setShowSpotsModal(false)}
+        parkingLot={selectedLot}
+      />
     </motion.div>
   );
 };
