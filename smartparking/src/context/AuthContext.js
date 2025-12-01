@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { auth } from "../Firebase";
 
 const AuthContext = createContext();
 
@@ -13,6 +14,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("token");
     }
   }, [token]);
+
+  // Listen for Firebase auth state changes and automatically refresh token
+  useEffect(() => {
+    const unsubscribe = auth.onIdTokenChanged(async (user) => {
+      if (user) {
+        const freshToken = await user.getIdToken();
+        setToken(freshToken);
+      } else {
+        setToken(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ token, setToken, loading, setLoading }}>
