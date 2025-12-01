@@ -23,6 +23,8 @@ const ParkingLotList = ({ onSelectLot, onAdd, onDelete, onManage }) => {
             <li key={lot.id} className="list-group-item d-flex justify-content-between align-items-center">
               <span onClick={() => onSelectLot(lot)} style={{ cursor: 'pointer', flex: 1 }}>
                 {lot.name}
+                <br />
+                <small className="text-muted">{lot.address}</small>
               </span>
               <ParkingLotActions 
                 parkingLot={lot}

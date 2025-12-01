@@ -65,7 +65,7 @@ const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
       
       const submitData = {
         name: formData.name,
-        address: formData.address,
+        address: results[0].label,
         latitude: latitude,
         longitude: longitude
       };
