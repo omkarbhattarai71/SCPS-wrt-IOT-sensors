@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
+import { useAdminParkingLots } from "../../hooks/useAdminParkingLots";
 import Header from "../common/Header";
 import ParkingLotList from "./ParkingLotList";
 import ParkingMap from "./ParkingMap";
@@ -13,6 +14,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { token, setToken } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { parkingLots, loading } = useAdminParkingLots();
   const [showAddModal, setShowAddModal] = useState(false);
 
   const handleLogout = () => {
@@ -117,6 +119,8 @@ const Dashboard = () => {
         <div className="container my-4">
           <h1 className="text-center text-white mb-4">Parking Lots Dashboard</h1>
           <ParkingLotList 
+            parkingLots={parkingLots}
+            loading={loading}
             onSelectLot={(lot) => console.log("Selected lot:", lot)}
             onAdd={handleAddLot}
             onDelete={handleDeleteLot}
@@ -126,7 +130,7 @@ const Dashboard = () => {
 
         <div className="container">
 
-          <ParkingMap token={token} spots={[]}/>
+          <ParkingMap token={token} parkingLots={parkingLots} />
         </div>
       </motion.div>
 

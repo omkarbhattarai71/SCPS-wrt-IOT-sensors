@@ -1,8 +1,6 @@
-import { useAdminParkingLots } from "../../hooks/useAdminParkingLots";
 import ParkingLotActions from "./ParkingLotActions";
 
-const ParkingLotList = ({ onSelectLot, onAdd, onDelete, onManage }) => {
-  const { parkingLots, loading } = useAdminParkingLots();
+const ParkingLotList = ({ parkingLots, loading, onSelectLot, onAdd, onDelete, onManage }) => {
     return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
