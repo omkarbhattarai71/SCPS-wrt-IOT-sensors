@@ -1,36 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 
 const ManageParkingLot = ({ selectedLot, onUpdate, onDelete }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    address: ''
-  });
-
-  useEffect(() => {
-    if (selectedLot) {
-      setFormData({
-        name: selectedLot.name || '',
-        address: selectedLot.address || ''
-      });
-    }
-  }, [selectedLot]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleUpdate = (e) => {
-    e.preventDefault();
-    if (selectedLot) {
-      onUpdate(selectedLot.id, formData);
-    }
-  };
-
   const handleDelete = () => {
     if (selectedLot && window.confirm(`Are you sure you want to delete "${selectedLot.name}"?`)) {
       onDelete(selectedLot);
@@ -59,50 +30,40 @@ const ManageParkingLot = ({ selectedLot, onUpdate, onDelete }) => {
         <h5 className="mb-0">Manage Parking Lot</h5>
       </div>
       <div className="card-body">
-        <form onSubmit={handleUpdate}>
-          <div className="mb-3">
-            <label htmlFor="name" className="form-label">
-              Name
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <div className="mb-2">
+          <label className="form-label fw-bold mb-0 small">Name</label>
+          <p className="mb-0">{selectedLot.name}</p>
+        </div>
 
-          <div className="mb-3">
-            <label htmlFor="address" className="form-label">
-              Address
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <div className="mb-2">
+          <label className="form-label fw-bold mb-0 small">Address</label>
+          <p className="mb-0">{selectedLot.address}</p>
+        </div>
 
-          <div className="d-flex gap-2">
-            <button type="submit" className="btn btn-primary flex-grow-1">
-              Update
-            </button>
-            <button 
-              type="button" 
-              className="btn btn-danger"
-              onClick={handleDelete}
-            >
-              Delete
-            </button>
-          </div>
-        </form>
+        <div className="mb-3">
+          <label className="form-label fw-bold mb-0 small">Location</label>
+          <p className="mb-0 small text-muted">
+            {selectedLot.location?.latitude}, {selectedLot.location?.longitude}
+          </p>
+        </div>
+
+        <div className="d-flex gap-2">
+          <button 
+            type="button" 
+            className="btn btn-sm btn-primary flex-grow-1"
+            onClick={() => onUpdate && onUpdate(selectedLot.id, {})}
+            disabled
+          >
+            Update
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-sm btn-danger"
+            onClick={handleDelete}
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </motion.div>
   );

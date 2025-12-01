@@ -56,27 +56,7 @@ const Dashboard = () => {
   };
 
   const handleUpdateLot = async (lotId, formData) => {
-    try {
-      const response = await fetch(process.env.REACT_APP_API_URL + "/cadmin/parking-lots/", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ id: lotId, ...formData })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update parking lot");
-      }
-
-      showSuccess("Parking lot updated successfully!");
-      window.location.reload();
-    } catch (error) {
-      showError(error.message || "Failed to update parking lot");
-      console.error("Error updating parking lot:", error);
-    }
+    // TODO: Implement update functionality when fields are editable
   };
 
   const handleDeleteLot = async (lot) => {
