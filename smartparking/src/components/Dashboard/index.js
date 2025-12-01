@@ -116,21 +116,23 @@ const Dashboard = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="container my-4">
+        <div className="container-fluid my-4">
           <h1 className="text-center text-white mb-4">Parking Lots Dashboard</h1>
-          <ParkingLotList 
-            parkingLots={parkingLots}
-            loading={loading}
-            onSelectLot={(lot) => console.log("Selected lot:", lot)}
-            onAdd={handleAddLot}
-            onDelete={handleDeleteLot}
-            onManage={handleManageLot}
-          />
-        </div>
-
-        <div className="container">
-
-          <ParkingMap token={token} parkingLots={parkingLots} />
+          <div className="row" style={{ minHeight: "calc(100vh - 250px)" }}>
+            <div className="col-md-4" style={{ maxHeight: "calc(100vh - 180px)", overflowY: "auto" }}>
+              <ParkingLotList 
+                parkingLots={parkingLots}
+                loading={loading}
+                onSelectLot={(lot) => console.log("Selected lot:", lot)}
+                onAdd={handleAddLot}
+                onDelete={handleDeleteLot}
+                onManage={handleManageLot}
+              />
+            </div>
+            <div className="col-md-8">
+              <ParkingMap token={token} parkingLots={parkingLots} />
+            </div>
+          </div>
         </div>
       </motion.div>
 

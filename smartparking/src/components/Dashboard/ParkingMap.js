@@ -33,7 +33,7 @@ const ParkingMap = ({ token, parkingLots }) => {
     <MapContainer
       center={DEFAULT_MAP_CENTER}
       zoom={DEFAULT_MAP_ZOOM}
-      style={{ height: "500px", marginTop: "20px" }}
+      style={{ height: "calc(100vh - 180px)", width: "100%" }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <FitBounds parkingLots={parkingLots} />
