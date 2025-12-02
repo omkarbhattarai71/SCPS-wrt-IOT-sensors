@@ -1,1 +1,1 @@
-export { default } from './BrowseParking/Index';
+export { default } from './BrowseParking/index';

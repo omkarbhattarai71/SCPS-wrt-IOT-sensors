@@ -19,10 +19,16 @@ const BrowseParking = () => {
   const [isCityOperator, setIsCityOperator] = useState(false);
   const [operatorRequestStatus, setOperatorRequestStatus] = useState(null);
   const [checkingRole, setCheckingRole] = useState(true);
+  const [userLocation, setUserLocation] = useState(null);
   const [filters, setFilters] = useState({
-    maxDistance: null,
-    maxPrice: null,
+    maxDistance: 0,
+    maxPrice: 0,
     sortBy: 'distance' // distance, price, availability
+  });
+  const [fetchedFilters, setFetchedFilters] = useState({
+    maxDistance: 0,
+    maxPrice: 0,
+    hadLocation: false
   });
   const { showError, showSuccess } = useNotification();
 
@@ -63,13 +69,51 @@ const BrowseParking = () => {
   }, [token]);
 
   useEffect(() => {
+    // Fetch parking lots immediately without location
     fetchParkingLots();
+    // Then get user location for distance filtering
+    getUserLocation();
   }, []);
 
   useEffect(() => {
-    // Apply filters when they change
-    applyFilters();
-  }, [filters, parkingLots]);
+    // Skip if filters haven't changed (initial render)
+    if (parkingLots.length === 0) return;
+
+    // Check if we need to refetch from backend
+    const needsRefetch =
+      (userLocation && filters.maxDistance > 0 && (fetchedFilters.maxDistance === 0 || filters.maxDistance > fetchedFilters.maxDistance)) ||
+      (filters.maxPrice > 0 && (fetchedFilters.maxPrice === 0 || filters.maxPrice > fetchedFilters.maxPrice)) ||
+      (userLocation && filters.maxDistance === 0 && fetchedFilters.maxDistance > 0) ||
+      (filters.maxPrice === 0 && fetchedFilters.maxPrice > 0) ||
+      (userLocation && !fetchedFilters.hadLocation); // Refetch when location becomes available
+
+    if (needsRefetch) {
+      fetchParkingLots();
+    } else {
+      // Apply filters client-side on existing data
+      applyClientSideFilters();
+    }
+  }, [filters, userLocation]);
+
+  const getUserLocation = () => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          // Still fetch parking lots without location
+          fetchParkingLots();
+        }
+      );
+    } else {
+      fetchParkingLots();
+    }
+  };
 
   const checkUserRole = async () => {
     if (!token) {
@@ -104,8 +148,27 @@ const BrowseParking = () => {
   const fetchParkingLots = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/parking-lots/`);
-      
+      // Build query parameters
+      const params = new URLSearchParams();
+
+      // Add user location if available
+      if (userLocation) {
+        params.append('latitude', userLocation.latitude);
+        params.append('longitude', userLocation.longitude);
+      }
+
+      // Add filters
+      if (filters.maxDistance > 0 && userLocation) {
+        params.append('max_distance', filters.maxDistance);
+      }
+
+      if (filters.maxPrice !== null && filters.maxPrice > 0) {
+        params.append('max_price', filters.maxPrice);
+      }
+
+      const url = `${process.env.REACT_APP_API_URL}/parking-lots/?${params.toString()}`;
+      const response = await fetch(url);
+
       if (!response.ok) {
         throw new Error('Failed to fetch parking lots');
       }
@@ -113,6 +176,13 @@ const BrowseParking = () => {
       const data = await response.json();
       setParkingLots(data.parking_lots || []);
       setFilteredLots(data.parking_lots || []);
+
+      // Store the filters we fetched with
+      setFetchedFilters({
+        maxDistance: filters.maxDistance,
+        maxPrice: filters.maxPrice,
+        hadLocation: !!userLocation
+      });
     } catch (error) {
       showError(error.message || 'Failed to load parking lots');
       console.error('Error fetching parking lots:', error);
@@ -121,27 +191,33 @@ const BrowseParking = () => {
     }
   };
 
-  const applyFilters = () => {
+  const applyClientSideFilters = () => {
     let filtered = [...parkingLots];
 
-    // Note: Distance and price filtering will be implemented on backend
-    // For now, we just pass through all lots
-    // When backend supports it, we'll make API calls with filter parameters
-
-    if (filters.maxDistance !== null) {
-      // TODO: Backend implementation needed
-      // filtered = filtered.filter(lot => lot.distance <= filters.maxDistance);
+    // Apply distance filter (client-side) - only if distance > 0
+    if (filters.maxDistance > 0) {
+      filtered = filtered.filter(lot =>
+        lot.distance === undefined || lot.distance === null || lot.distance <= filters.maxDistance
+      );
     }
 
-    if (filters.maxPrice !== null) {
-      // TODO: Backend implementation needed
-      // filtered = filtered.filter(lot => lot.price <= filters.maxPrice);
+    // Apply price filter (client-side) - only if price > 0
+    // Include lots with no price set (they should always be shown)
+    if (filters.maxPrice !== null && filters.maxPrice > 0) {
+      filtered = filtered.filter(lot =>
+        lot.price_per_hour === undefined ||
+        lot.price_per_hour === null ||
+        lot.price_per_hour === 0 ||
+        lot.price_per_hour <= filters.maxPrice
+      );
     }
 
-    // TODO: Sorting will also need backend support for accurate distance calculation
-    // if (filters.sortBy === 'distance') {
-    //   filtered.sort((a, b) => a.distance - b.distance);
-    // }
+    // Apply sorting
+    if (filters.sortBy === 'distance') {
+      filtered.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    } else if (filters.sortBy === 'price') {
+      filtered.sort((a, b) => (a.price_per_hour || 0) - (b.price_per_hour || 0));
+    }
 
     setFilteredLots(filtered);
   };
@@ -172,8 +248,8 @@ const BrowseParking = () => {
 
   return (
     <div style={containerStyle}>
-      <Header 
-        token={token} 
+      <Header
+        token={token}
         onLogout={handleLogout}
         isCityOperator={isCityOperator}
         onGoToDashboard={handleGoToDashboard}
@@ -190,16 +266,15 @@ const BrowseParking = () => {
       >
         <div className="container-fluid my-4">
           <h1 className="text-center text-white mb-4">Find Parking</h1>
-          
+
           <FilterBar 
             filters={filters}
             onFilterChange={handleFilterChange}
-          />
-
-          <div className="row" style={{ minHeight: "calc(100vh - 300px)" }}>
+            hasLocation={!!userLocation}
+          />          <div className="row" style={{ minHeight: "calc(100vh - 300px)" }}>
             <div className="col-md-4">
-              <div style={{ 
-                height: "calc(100vh - 300px)", 
+              <div style={{
+                height: "calc(100vh - 300px)",
                 overflowY: "auto",
                 backgroundColor: "rgba(255, 255, 255, 0.95)",
                 borderRadius: "8px",

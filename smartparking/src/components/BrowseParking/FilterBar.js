@@ -1,80 +1,77 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef } from 'react';
 
-const FilterBar = ({ filters, onFilterChange }) => {
-  const [showFilters, setShowFilters] = useState(false);
-  const [tempFilters, setTempFilters] = useState({
-    maxDistance: '',
-    maxPrice: '',
-    sortBy: filters.sortBy || 'distance'
-  });
+const FilterBar = ({ filters, onFilterChange, hasLocation }) => {
+  const [tempDistance, setTempDistance] = useState(filters.maxDistance);
+  const [tempPrice, setTempPrice] = useState(filters.maxPrice);
+  const distanceTimeoutRef = useRef(null);
+  const priceTimeoutRef = useRef(null);
 
-  const handleApplyFilters = () => {
+  const handleDistanceChange = (value) => {
+    setTempDistance(value);
+  };
+
+  const handleDistanceRelease = (value) => {
     onFilterChange({
-      maxDistance: tempFilters.maxDistance ? parseFloat(tempFilters.maxDistance) : null,
-      maxPrice: tempFilters.maxPrice ? parseFloat(tempFilters.maxPrice) : null,
-      sortBy: tempFilters.sortBy
+      ...filters,
+      maxDistance: value > 0 ? value : 0
     });
-    setShowFilters(false);
+  };
+
+  const handlePriceChange = (value) => {
+    setTempPrice(value);
+  };
+
+  const handlePriceRelease = (value) => {
+    onFilterChange({
+      ...filters,
+      maxPrice: value > 0 ? value : 0
+    });
   };
 
   const handleClearFilters = () => {
-    setTempFilters({
-      maxDistance: '',
-      maxPrice: '',
-      sortBy: 'distance'
-    });
+    setTempDistance(0);
+    setTempPrice(0);
     onFilterChange({
-      maxDistance: null,
-      maxPrice: null,
+      maxDistance: 0,
+      maxPrice: 0,
       sortBy: 'distance'
     });
   };
 
   const activeFilterCount = [
-    filters.maxDistance !== null,
-    filters.maxPrice !== null
+    tempDistance !== null && tempDistance > 0,
+    tempPrice !== null && tempPrice > 0
   ].filter(Boolean).length;
 
   return (
     <div className="mb-3">
       <div className="card">
         <div className="card-body">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center gap-3">
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowFilters(!showFilters)}
-              >
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex align-items-center gap-2">
+              <h6 className="mb-0">
                 <i className="bi bi-funnel me-2"></i>
                 Filters
-                {activeFilterCount > 0 && (
-                  <span className="badge bg-light text-dark ms-2">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-              
+              </h6>
               {activeFilterCount > 0 && (
                 <button
                   className="btn btn-outline-secondary btn-sm"
                   onClick={handleClearFilters}
                 >
                   <i className="bi bi-x-circle me-1"></i>
-                  Clear Filters
+                  Clear
                 </button>
               )}
             </div>
 
             <div className="d-flex align-items-center">
-              <label className="me-2 mb-0">Sort by:</label>
+              <label className="me-2 mb-0 text-muted small">Sort by:</label>
               <select
                 className="form-select form-select-sm"
                 style={{ width: 'auto' }}
-                value={tempFilters.sortBy}
+                value={filters.sortBy || 'distance'}
                 onChange={(e) => {
-                  setTempFilters({ ...tempFilters, sortBy: e.target.value });
-                  onFilterChange({ sortBy: e.target.value });
+                  onFilterChange({ ...filters, sortBy: e.target.value });
                 }}
               >
                 <option value="distance">Distance</option>
@@ -84,75 +81,71 @@ const FilterBar = ({ filters, onFilterChange }) => {
             </div>
           </div>
 
-          {showFilters && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-3 pt-3 border-top"
-            >
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label htmlFor="maxDistance" className="form-label">
-                    <i className="bi bi-geo-alt me-2"></i>
-                    Maximum Distance (km)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="maxDistance"
-                    placeholder="e.g., 5"
-                    min="0"
-                    step="0.5"
-                    value={tempFilters.maxDistance}
-                    onChange={(e) => setTempFilters({ ...tempFilters, maxDistance: e.target.value })}
-                  />
-                  <small className="text-muted">
-                    <i className="bi bi-info-circle me-1"></i>
-                    Backend support coming soon
-                  </small>
-                </div>
-
-                <div className="col-md-6">
-                  <label htmlFor="maxPrice" className="form-label">
-                    <i className="bi bi-currency-dollar me-2"></i>
-                    Maximum Price ($/hour)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="maxPrice"
-                    placeholder="e.g., 10"
-                    min="0"
-                    step="0.5"
-                    value={tempFilters.maxPrice}
-                    onChange={(e) => setTempFilters({ ...tempFilters, maxPrice: e.target.value })}
-                  />
-                  <small className="text-muted">
-                    <i className="bi bi-info-circle me-1"></i>
-                    Backend support coming soon
-                  </small>
-                </div>
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label htmlFor="maxDistance" className="form-label d-flex justify-content-between align-items-center mb-2">
+                <span>
+                  <i className="bi bi-geo-alt me-2"></i>
+                  Maximum Distance
+                </span>
+                <span className={`badge ${tempDistance > 0 ? 'bg-primary' : 'bg-secondary'}`}>
+                  {hasLocation ? (tempDistance > 0 ? `${tempDistance} km` : 'No limit') : 'Getting location...'}
+                </span>
+              </label>
+              <input
+                type="range"
+                className="form-range"
+                id="maxDistance"
+                min="0"
+                max="20"
+                step="1"
+                value={tempDistance || 0}
+                onChange={(e) => handleDistanceChange(parseFloat(e.target.value))}
+                onMouseUp={(e) => handleDistanceRelease(parseFloat(e.target.value))}
+                onTouchEnd={(e) => handleDistanceRelease(parseFloat(e.target.value))}
+                disabled={!hasLocation}
+                style={{ opacity: hasLocation ? 1 : 0.5 }}
+              />
+              <div className="d-flex justify-content-between small text-muted">
+                <span>No limit</span>
+                <span>20 km</span>
               </div>
+              {!hasLocation && (
+                <small className="text-warning">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Acquiring your location...
+                </small>
+              )}
+            </div>
 
-              <div className="mt-3 d-flex gap-2">
-                <button
-                  className="btn btn-success"
-                  onClick={handleApplyFilters}
-                >
-                  <i className="bi bi-check2 me-2"></i>
-                  Apply Filters
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowFilters(false)}
-                >
-                  Cancel
-                </button>
+            <div className="col-md-6">
+              <label htmlFor="maxPrice" className="form-label d-flex justify-content-between align-items-center mb-2">
+                <span>
+                  <i className="bi bi-currency-dollar me-2"></i>
+                  Maximum Price
+                </span>
+                <span className={`badge ${tempPrice > 0 ? 'bg-success' : 'bg-secondary'}`}>
+                  {tempPrice > 0 ? `${tempPrice} DKK/hr` : 'No limit'}
+                </span>
+              </label>
+              <input
+                type="range"
+                className="form-range"
+                id="maxPrice"
+                min="0"
+                max="50"
+                step="5"
+                value={tempPrice || 0}
+                onChange={(e) => handlePriceChange(parseFloat(e.target.value))}
+                onMouseUp={(e) => handlePriceRelease(parseFloat(e.target.value))}
+                onTouchEnd={(e) => handlePriceRelease(parseFloat(e.target.value))}
+              />
+              <div className="d-flex justify-content-between small text-muted">
+                <span>No limit</span>
+                <span>50 DKK</span>
               </div>
-            </motion.div>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

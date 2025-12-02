@@ -43,27 +43,26 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
                   <span className="badge bg-info" style={{ fontSize: '0.7rem' }}>
                     <i className="bi bi-broadcast"></i> Live
                   </span>
+                  {lot.distance !== undefined && lot.distance !== null && (
+                    <span className={selectedLot?.id === lot.id ? 'text-white-50' : 'text-muted'} style={{ fontSize: '0.875rem' }}>
+                      <i className="bi bi-compass me-1"></i>
+                      {lot.distance.toFixed(2)} km
+                    </span>
+                  )}
                 </div>
                 <small className={selectedLot?.id === lot.id ? 'text-white-50' : 'text-muted'}>
                   <i className="bi bi-geo-alt me-1"></i>
                   {lot.address}
                 </small>
                 
-                {/* TODO: Add distance when backend supports it */}
-                {/* <div className="mt-1">
-                  <small className={selectedLot?.id === lot.id ? 'text-white-50' : 'text-muted'}>
-                    <i className="bi bi-compass me-1"></i>
-                    {lot.distance} km away
-                  </small>
-                </div> */}
-
-                {/* TODO: Add price when backend supports it */}
-                {/* <div className="mt-1">
-                  <small className={selectedLot?.id === lot.id ? 'text-white' : 'text-success'}>
-                    <i className="bi bi-currency-dollar me-1"></i>
-                    {lot.price}/hour
-                  </small>
-                </div> */}
+                {lot.price_per_hour !== undefined && lot.price_per_hour !== null && (
+                  <div className="mt-1">
+                    <small className={selectedLot?.id === lot.id ? 'text-white' : 'text-success'}>
+                      <i className="bi bi-currency-dollar me-1"></i>
+                      {lot.price_per_hour} DKK/hour
+                    </small>
+                  </div>
+                )}
 
                 <div className="mt-2">
                   <LiveOccupancyIndicator
