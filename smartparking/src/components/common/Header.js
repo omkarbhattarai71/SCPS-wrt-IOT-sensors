@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { COLORS } from "../../constants/parkingConstants";
 import { AUTH_COLORS } from "../../constants/authConstants";
 
-const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoToDashboard, onRequestOperator, checkingRole, onBrowseParking }) => {
+const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoToDashboard, onRequestOperator, checkingRole, onBrowseParking, operatorRequestStatus }) => {
   const navigate = useNavigate();
 
   const variants = {
@@ -146,9 +146,17 @@ const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoTo
             )
           ) : (
             onRequestOperator && (
-              <button style={requestOperatorButtonStyle} onClick={onRequestOperator}>
+              <button 
+                style={requestOperatorButtonStyle} 
+                onClick={onRequestOperator}
+                disabled={operatorRequestStatus === 'pending'}
+              >
                 <i className="bi bi-person-badge me-1"></i>
-                Request Operator
+                {operatorRequestStatus === 'pending' 
+                  ? 'Request Pending' 
+                  : operatorRequestStatus === 'rejected'
+                  ? 'Resubmit Request'
+                  : 'Request Operator'}
               </button>
             )
           )

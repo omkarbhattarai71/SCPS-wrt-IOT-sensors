@@ -17,13 +17,14 @@ const BrowseParking = () => {
   const [selectedLot, setSelectedLot] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isCityOperator, setIsCityOperator] = useState(false);
+  const [operatorRequestStatus, setOperatorRequestStatus] = useState(null);
   const [checkingRole, setCheckingRole] = useState(true);
   const [filters, setFilters] = useState({
     maxDistance: null,
     maxPrice: null,
     sortBy: 'distance' // distance, price, availability
   });
-  const { showError } = useNotification();
+  const { showError, showSuccess } = useNotification();
 
   const handleLogout = () => {
     setToken(null);
@@ -34,9 +35,27 @@ const BrowseParking = () => {
     navigate('/dashboard');
   };
 
-  const handleRequestOperatorAccess = () => {
-    showError('Please contact system administrator to request city operator access.');
-    // TODO: Implement proper request system (email, form, etc.)
+  const handleRequestOperatorAccess = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/request-operator-access/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        showSuccess(data.message);
+        setOperatorRequestStatus(data.status);
+      } else {
+        const errorData = await response.json();
+        showError(errorData.error || 'Failed to submit operator request');
+      }
+    } catch (error) {
+      showError('Failed to submit operator request. Please try again.');
+      console.error('Error requesting operator access:', error);
+    }
   };
 
   useEffect(() => {
@@ -56,6 +75,7 @@ const BrowseParking = () => {
     if (!token) {
       setCheckingRole(false);
       setIsCityOperator(false);
+      setOperatorRequestStatus(null);
       return;
     }
 
@@ -70,10 +90,12 @@ const BrowseParking = () => {
       if (response.ok) {
         const data = await response.json();
         setIsCityOperator(data.is_city_operator);
+        setOperatorRequestStatus(data.operator_request_status);
       }
     } catch (error) {
       console.error('Error checking user role:', error);
       setIsCityOperator(false);
+      setOperatorRequestStatus(null);
     } finally {
       setCheckingRole(false);
     }
@@ -157,6 +179,7 @@ const BrowseParking = () => {
         onGoToDashboard={handleGoToDashboard}
         onRequestOperator={handleRequestOperatorAccess}
         checkingRole={checkingRole}
+        operatorRequestStatus={operatorRequestStatus}
       />
       <div style={backgroundStyle}></div>
 
