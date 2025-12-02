@@ -5,6 +5,7 @@ import NotificationDisplay from "./components/common/NotificationDisplay";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
+import BrowseParkingPage from "./pages/BrowseParkingPage";
 import AboutUs from "./components/Aboutus";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -16,7 +17,7 @@ function App() {
         <Router>
           <NotificationDisplay />
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
+            <Route path="/" element={<BrowseParkingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />        
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />  

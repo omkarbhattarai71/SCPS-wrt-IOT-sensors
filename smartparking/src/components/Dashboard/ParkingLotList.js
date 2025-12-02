@@ -39,6 +39,7 @@ const ParkingLotList = ({ parkingLots, loading, selectedLot, onSelectLot, onAdd 
                   <div className="mt-2">
                     <LiveOccupancyIndicator 
                       parkingLotId={lot.id}
+                      totalSpots={lot.capacity}
                       variant="full"
                       showLiveBadge={false}
                       showPercentage={true}
