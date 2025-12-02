@@ -49,6 +49,19 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
                       {lot.distance.toFixed(2)} km
                     </span>
                   )}
+                  {lot.location?.latitude && lot.location?.longitude && (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${lot.location.latitude},${lot.location.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`btn btn-sm ${selectedLot?.id === lot.id ? 'btn-light' : 'btn-outline-primary'}`}
+                      style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <i className="bi bi-map me-1"></i>
+                      Navigate
+                    </a>
+                  )}
                 </div>
                 <small className={selectedLot?.id === lot.id ? 'text-white-50' : 'text-muted'}>
                   <i className="bi bi-geo-alt me-1"></i>

@@ -3,6 +3,15 @@ import React, { useState, useRef } from 'react';
 const FilterBar = ({ filters, onFilterChange, hasLocation }) => {
   const [tempDistance, setTempDistance] = useState(filters.maxDistance);
   const [tempPrice, setTempPrice] = useState(filters.maxPrice);
+
+  // Update temp values when filters change externally
+  React.useEffect(() => {
+    setTempDistance(filters.maxDistance);
+  }, [filters.maxDistance]);
+
+  React.useEffect(() => {
+    setTempPrice(filters.maxPrice);
+  }, [filters.maxPrice]);
   const distanceTimeoutRef = useRef(null);
   const priceTimeoutRef = useRef(null);
 
@@ -29,17 +38,17 @@ const FilterBar = ({ filters, onFilterChange, hasLocation }) => {
   };
 
   const handleClearFilters = () => {
-    setTempDistance(0);
+    setTempDistance(20);
     setTempPrice(0);
     onFilterChange({
-      maxDistance: 0,
+      maxDistance: 20,
       maxPrice: 0,
       sortBy: 'distance'
     });
   };
 
   const activeFilterCount = [
-    tempDistance !== null && tempDistance > 0,
+    tempDistance !== null && tempDistance > 0 && tempDistance < 20,
     tempPrice !== null && tempPrice > 0
   ].filter(Boolean).length;
 
@@ -88,8 +97,8 @@ const FilterBar = ({ filters, onFilterChange, hasLocation }) => {
                   <i className="bi bi-geo-alt me-2"></i>
                   Maximum Distance
                 </span>
-                <span className={`badge ${tempDistance > 0 ? 'bg-primary' : 'bg-secondary'}`}>
-                  {hasLocation ? (tempDistance > 0 ? `${tempDistance} km` : 'No limit') : 'Getting location...'}
+                <span className={`badge ${tempDistance > 0 && tempDistance < 20 ? 'bg-primary' : 'bg-secondary'}`}>
+                  {hasLocation ? `${tempDistance} km` : 'Getting location...'}
                 </span>
               </label>
               <input

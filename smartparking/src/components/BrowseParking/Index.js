@@ -21,7 +21,7 @@ const BrowseParking = () => {
   const [checkingRole, setCheckingRole] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
   const [filters, setFilters] = useState({
-    maxDistance: 0,
+    maxDistance: 20,
     maxPrice: 0,
     sortBy: 'distance' // distance, price, availability
   });
@@ -69,7 +69,7 @@ const BrowseParking = () => {
   }, [token]);
 
   useEffect(() => {
-    // Fetch parking lots immediately without location
+    // Fetch parking lots immediately without filters
     fetchParkingLots();
     // Then get user location for distance filtering
     getUserLocation();
@@ -103,15 +103,13 @@ const BrowseParking = () => {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
           });
+          // Don't fetch here - the useEffect will handle refetch when userLocation changes
         },
         (error) => {
           console.error('Error getting location:', error);
-          // Still fetch parking lots without location
-          fetchParkingLots();
+          // Location failed, but we already have results from initial fetch
         }
       );
-    } else {
-      fetchParkingLots();
     }
   };
 
