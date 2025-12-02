@@ -1,23 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Header from '../common/Header';
 import Footer from '../common/Footer';
 import PublicParkingMap from './PublicParkingMap';
 import PublicParkingList from './PublicParkingList';
 import FilterBar from './FilterBar';
+import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 
 const BrowseParking = () => {
+  const navigate = useNavigate();
+  const { token, setToken } = useAuth();
   const [parkingLots, setParkingLots] = useState([]);
   const [filteredLots, setFilteredLots] = useState([]);
   const [selectedLot, setSelectedLot] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isCityOperator, setIsCityOperator] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
   const [filters, setFilters] = useState({
     maxDistance: null,
     maxPrice: null,
     sortBy: 'distance' // distance, price, availability
   });
   const { showError } = useNotification();
+
+  const handleLogout = () => {
+    setToken(null);
+    navigate('/');
+  };
+
+  const handleGoToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  const handleRequestOperatorAccess = () => {
+    showError('Please contact system administrator to request city operator access.');
+    // TODO: Implement proper request system (email, form, etc.)
+  };
+
+  useEffect(() => {
+    checkUserRole();
+  }, [token]);
 
   useEffect(() => {
     fetchParkingLots();
@@ -27,6 +51,33 @@ const BrowseParking = () => {
     // Apply filters when they change
     applyFilters();
   }, [filters, parkingLots]);
+
+  const checkUserRole = async () => {
+    if (!token) {
+      setCheckingRole(false);
+      setIsCityOperator(false);
+      return;
+    }
+
+    setCheckingRole(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/check-user-role/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsCityOperator(data.is_city_operator);
+      }
+    } catch (error) {
+      console.error('Error checking user role:', error);
+      setIsCityOperator(false);
+    } finally {
+      setCheckingRole(false);
+    }
+  };
 
   const fetchParkingLots = async () => {
     setLoading(true);
@@ -99,7 +150,14 @@ const BrowseParking = () => {
 
   return (
     <div style={containerStyle}>
-      <Header />
+      <Header 
+        token={token} 
+        onLogout={handleLogout}
+        isCityOperator={isCityOperator}
+        onGoToDashboard={handleGoToDashboard}
+        onRequestOperator={handleRequestOperatorAccess}
+        checkingRole={checkingRole}
+      />
       <div style={backgroundStyle}></div>
 
       <motion.div

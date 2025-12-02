@@ -18,7 +18,7 @@ export const useLogin = () => {
 
       setToken(idToken);
       showSuccess("Logged in successfully!");
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       const errorMessage = err.message || "Login failed. Please try again.";
       showError(errorMessage);
@@ -37,7 +37,7 @@ export const useLogin = () => {
 
       setToken(idToken);
       showSuccess("Logged in with Google successfully!");
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       const errorMessage = err.message || "Google login failed. Please try again.";
       showError(errorMessage);

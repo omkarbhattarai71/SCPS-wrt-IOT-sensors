@@ -24,6 +24,10 @@ const Dashboard = () => {
     navigate("/");
   };
 
+  const handleBrowseParking = () => {
+    navigate("/");
+  };
+
   const handleAddLot = () => {
     setShowAddModal(true);
   };
@@ -106,7 +110,11 @@ const Dashboard = () => {
 
   return (
     <div style={containerStyle}>
-      <Header token={token} onLogout={handleLogout} />
+      <Header 
+        token={token} 
+        onLogout={handleLogout}
+        onBrowseParking={handleBrowseParking}
+      />
 
       <div style={backgroundStyle}></div>
 

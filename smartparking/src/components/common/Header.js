@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { COLORS } from "../../constants/parkingConstants";
 import { AUTH_COLORS } from "../../constants/authConstants";
 
-const Header = ({ variant = "dashboard", token, onLogout }) => {
+const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoToDashboard, onRequestOperator, checkingRole, onBrowseParking }) => {
   const navigate = useNavigate();
 
   const variants = {
@@ -77,6 +77,26 @@ const Header = ({ variant = "dashboard", token, onLogout }) => {
     color: "white",
   };
 
+  const dashboardButtonStyle = {
+    ...buttonBaseStyle,
+    backgroundColor: currentVariant.primaryColor,
+    color: currentVariant.blackColor,
+  };
+
+  const requestOperatorButtonStyle = {
+    ...buttonBaseStyle,
+    backgroundColor: "transparent",
+    border: `1px solid ${currentVariant.primaryColor}`,
+    color: currentVariant.primaryColor,
+  };
+
+  const browseParkingButtonStyle = {
+    ...buttonBaseStyle,
+    backgroundColor: "transparent",
+    border: `1px solid ${currentVariant.primaryColor}`,
+    color: currentVariant.primaryColor,
+  };
+
   const backButtonStyle = {
     ...buttonBaseStyle,
     backgroundColor: currentVariant.primaryColor,
@@ -108,6 +128,31 @@ const Header = ({ variant = "dashboard", token, onLogout }) => {
         <button style={aboutButtonStyle} onClick={() => navigate("/about")}>
           About Us
         </button>
+
+        {onBrowseParking && (
+          <button style={browseParkingButtonStyle} onClick={onBrowseParking}>
+            <i className="bi bi-search me-1"></i>
+            Browse Parking
+          </button>
+        )}
+
+        {token && !checkingRole && (
+          isCityOperator ? (
+            onGoToDashboard && (
+              <button style={dashboardButtonStyle} onClick={onGoToDashboard}>
+                <i className="bi bi-speedometer2 me-1"></i>
+                Dashboard
+              </button>
+            )
+          ) : (
+            onRequestOperator && (
+              <button style={requestOperatorButtonStyle} onClick={onRequestOperator}>
+                <i className="bi bi-person-badge me-1"></i>
+                Request Operator
+              </button>
+            )
+          )
+        )}
 
         {token ? (
           <button style={logoutButtonStyle} onClick={onLogout}>
