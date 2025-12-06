@@ -14,15 +14,15 @@ const Login = ({ setToken }) => {
 
   const handleLogin = async () => {
     try {
-      if(loginType === "admin"){
-        const res = await axios.post("http://localhost:8000/api/admin/login/",{
-          email, 
+      if (loginType === "admin") {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/login/`, {
+          email,
           password,
         });
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("userType", "admin");
         setToken(res.data.token);
-        
+
       }
       console.log("Login attempt started with email:", email);
       const userCredential = await signInWithEmailAndPassword(
@@ -48,17 +48,18 @@ const Login = ({ setToken }) => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const idToken = await credential.idToken;
 
       const res = await axios.post(
-        "https://zoie-transrational-beamishly.ngrok-free.dev/login/",
+        `${process.env.REACT_APP_API_URL}/login/`,
         {
           token: idToken,
         }
       );
 
-      localStorage.setItem("token", res.data.token);
-      setToken(res.data.token);
+      localStorage.setItem("token", res.data.idToken);
+      setToken(res.data.idToken);
       alert("Logged in successfully with Google!");
       navigate("/dashboard");
     } catch (error) {
