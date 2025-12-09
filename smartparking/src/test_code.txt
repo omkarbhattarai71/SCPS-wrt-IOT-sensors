@@ -1,0 +1,1220 @@
+# FIREBASE_API_KEY="AIzaSyCDkSv4pG9fePIY7zkHPcTwMF1DhoB2ADM"
+# DJANGO_SECRET_KEY="%rz=bfc(*z$8-7(l@m^tfwr$3^9w_5p=k938(%e+cwd*xxbo-2"
+# DJANGO_DEBUG="True"
+# HOST_URL="http://127.0.0.1:8000"
+# ALLOWED_HOSTS="127.0.0.1,localhost"
+# CORS_ALLOWED_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
+
+
+
+  // const handleGoogleLogin = async () => {
+  //   try {
+  //     const provider = new GoogleAuthProvider();
+  //     const result = await signInWithPopup(auth, provider);
+  //     const idToken = await result.user.getIdToken();
+
+  //     const res = await axios.post(
+  //       "http://127.0.0.1:8000/login/",
+  //       {
+  //         token: idToken,
+  //       }
+  //     );
+
+  //     localStorage.setItem("token", res.data.token);
+  //     localStorage.setItem("userType", "user");
+  //     setToken(res.data.token);
+  //     alert("Logged in successfully with Google!");
+  //     navigate("/dashboard");
+  //   } catch (error) {
+  //     console.error("Google Login Error:", error);
+  //     alert(error.message);
+  //   }
+  // };
+
+// Login Code 
+// import { useState } from "react";
+// import { motion } from "framer-motion";
+// import { auth } from "../Firebase";
+// import { signInWithEmailAndPassword } from "firebase/auth";
+// import axios from "axios";
+// import { useNavigate } from "react-router-dom";
+// import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+
+// const Login = ({ setToken, setUserType }) => {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [loginType, setLoginType] = useState("user");
+//   const navigate = useNavigate();
+
+//   const handleLogin = async () => {
+//     try {
+//       // if(loginType === "admin"){
+//       //   const res = await axios.post("http://localhost:8000/api/ admin/login/",{
+//       //     email,
+//       //     password,
+//       //   });
+//       //   localStorage.setItem("token", res.data.token);
+//       //   localStorage.setItem("userType", "admin");
+//       //   setToken(res.data.token);
+//       //   setUserType("admin");
+//       //   navigate("/admin");
+
+//       // }
+
+//       // Local Test
+//       if (loginType === "admin") {
+//         // simple local check for testing (no backend needed)
+//         if (email === "admin@example.com" && password === "admin123") {
+//           const fakeToken = "fake-admin-token-123";
+//           localStorage.setItem("token", fakeToken);
+//           localStorage.setItem("userType", "admin");
+//           setToken(fakeToken);
+//           setUserType("admin");
+//           alert("Logged in as admin (local test)");
+//           navigate("/admin");
+//         } else {
+//           alert("Invalid admin credentials (use admin@example.com / admin123)");
+//         }
+//       } else {
+//         // console.log("Login attempt started with email:", email);
+//         const userCredential = await signInWithEmailAndPassword(
+//           auth,
+//           email,
+//           password
+//         );
+//         // console.log("Firebase auth successfull:", userCredential.user);
+//         const idToken = await userCredential.user.getIdToken();
+
+//         // console.log("Firebase ID token obtained:", idToken);
+//         localStorage.setItem("userType", "user");
+//         setToken(idToken);
+//         setUserType("user");
+//         alert("Logged in successfully!");
+
+//         navigate("/dashboard");
+//       }
+//     } catch (error) {
+//       console.error("Login Error:", error);
+//       alert(error.response?.data?.message || error.message);
+//     }
+//   };
+
+//   const handleGoogleLogin = async () => {
+//     try {
+//       const provider = new GoogleAuthProvider();
+//       const result = await signInWithPopup(auth, provider);
+
+//       // Get Google OAuth credential
+//       const credential = GoogleAuthProvider.credentialFromResult(result);
+//       if (!credential?.idToken) {
+//         throw new Error("No ID token returned from Google login.");
+//       }
+//       const idToken = credential.idToken;
+
+//       // Send to backend
+//       const res = await axios.post("http://127.0.0.1:8000/login/", {
+//         token: idToken,
+//         providerId: "google.com",
+//       });
+
+//       if (!res.data?.idToken && !res.data?.token) {
+//         throw new Error("Backend did not return a valid token.");
+//       }
+
+//       const backendToken = res.data.token || res.data.idToken;
+
+//       localStorage.setItem("token", backendToken);
+//       localStorage.setItem("userType", "user");
+//       setToken(backendToken);
+//       alert("Logged in successfully with Google!");
+//       navigate("/dashboard");
+//     } catch (error) {
+//       console.error("Google Login Error:", error);
+//       alert(error.response?.data?.error?.message || error.message);
+//     }
+//   };
+
+//   const GoogleIcon = () => (
+//     <svg width="22" height="22" viewBox="0 0 24 24">
+//       <path
+//         fill="#4285F4"
+//         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+//       />
+//       <path
+//         fill="#34A853"
+//         d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+//       />
+//       <path
+//         fill="#FBBC05"
+//         d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+//       />
+//       <path
+//         fill="#EA4335"
+//         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+//       />
+//     </svg>
+//   );
+
+//   return (
+//     <div
+//       style={{
+//         position: "relative",
+//         minHeight: "100vh",
+//         overflow: "hidden",
+//       }}
+//     >
+//       {/* Background image */}
+//       <div
+//         style={{
+//           backgroundImage: 'url("/images/background.png")',
+//           backgroundSize: "cover",
+//           backgroundPosition: "center",
+//           position: "absolute",
+//           top: 0,
+//           left: 0,
+//           width: "100%",
+//           height: "100%",
+//           zIndex: -1,
+//           opacity: 0.7,
+//         }}
+//       ></div>
+//       <motion.div
+//         initial={{ opacity: 0, y: 50 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         transition={{ duration: 0.5 }}
+//       >
+//         <div
+//           className="d-flex justify-content-center align-items-center"
+//           style={{ height: "100vh" }}
+//         >
+//           <div
+//             className="card p-4"
+//             style={{ maxWidth: "400px", width: "100%" }}
+//           >
+//             <h2 className="text-center mb-3">Login</h2>
+//             {/* Login type Selector */}
+//             <div className="mb-3">
+//               <label className="form-label">Login as:</label>
+//               <select
+//                 className="form-select"
+//                 value={loginType}
+//                 onChange={(e) => setLoginType(e.target.value)}
+//               >
+//                 <option value="user">Regular User</option>
+//                 <option value="admin">City Operator/Admin</option>
+//               </select>
+//             </div>
+
+//             <input
+//               className="form-control mb-2"
+//               placeholder="Email"
+//               value={email}
+//               onChange={(e) => setEmail(e.target.value)}
+//             />
+//             <input
+//               className="form-control mb-3"
+//               type="password"
+//               placeholder="Password"
+//               value={password}
+//               onChange={(e) => setPassword(e.target.value)}
+//             />
+
+//             <motion.button
+//               className="btn btn-primary w-100 mb-2"
+//               whileHover={{ scale: 1.05 }}
+//               onClick={handleLogin}
+//             >
+//               {loginType === "admin" ? "Admin Login" : "Login"}
+//             </motion.button>
+
+//             {loginType === "user" && (
+//               <div className="text-center mt-3">
+//                 <p>or, login with</p>
+//                 <motion.button
+//                   whileHover={{ scale: 1.05 }}
+//                   whileTap={{ scale: 0.95 }}
+//                   className="btn btn-light border d-flex align-items-center justify-content-center mx-auto"
+//                   style={{
+//                     gap: "8px",
+//                     width: "80%",
+//                     maxWidth: "250px",
+//                     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+//                   }}
+//                   onClick={handleGoogleLogin}
+//                 >
+//                   <GoogleIcon />
+//                   <span className="fw-medium text-secondary">Google</span>
+//                 </motion.button>
+//               </div>
+//             )}
+//             {loginType === "user" && (
+//               <p className="text-center mt-3">
+//                 Don't have an account?{" "}
+//                 <motion.span
+//                   style={{
+//                     color: "#0d6efd",
+//                     cursor: "pointer",
+//                     fontWeight: "bold",
+//                   }}
+//                   whileHover={{ scale: 1.1 }}
+//                   onClick={() => navigate("/signup")}
+//                 >
+//                   Signup
+//                 </motion.span>
+//               </p>
+//             )}
+//           </div>
+//         </div>
+//       </motion.div>
+//     </div>
+//   );
+// };
+
+// export default Login;
+
+// App.js
+// import { useState, useEffect } from "react";
+// import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+// import LoginPage from "./pages/LoginPage";
+// import SignupPage from "./pages/SignupPage";
+// import DashboardPage from "./pages/DashboardPage";
+// import AdminDashboardPage from "./pages/AdminDashboardPage";
+// import AboutUs from "./components/Aboutus";
+// import "bootstrap/dist/css/bootstrap.min.css";
+
+// function App() {
+//   const [token, setToken] = useState(localStorage.getItem("token") || null);
+//   const [userType, setUserType] = useState(
+//     localStorage.getItem("userType") || null
+//   );
+
+//   useEffect(() => {
+//     if (token) {
+//       localStorage.setItem("token", token);
+//     } else {
+//       localStorage.removeItem("token");
+//       localStorage.removeItem("userType");
+//     }
+//     if (userType) {
+//       localStorage.setItem("userType", userType);
+//     }
+//   }, [token, userType]);
+//   const handleLogout = () => {
+//     setToken(null);
+//     setUserType("user");
+//   };
+
+//   return (
+//     <Router>
+//       <Routes>
+//         <Route
+//           path="/"
+//           element={
+//             <DashboardPage
+//               token={token}
+//               setToken={setToken}
+//               onLogout={handleLogout}
+//             />
+//           }
+//         />
+//         <Route
+//           path="/dashboard"
+//           element={
+//             <DashboardPage
+//               token={token}
+//               setToken={setToken}
+//               onLogout={handleLogout}
+//             />
+//           }
+//         />
+//         <Route
+//           path="/admin"
+//           element={
+//             <AdminDashboardPage
+//               token={token}
+//               setToken={setToken}
+//               onLogout={handleLogout}
+//             />
+//           }
+//         />
+//         <Route path="/login" element={<LoginPage setToken={setToken} setUserType={setUserType}/>} />
+//         <Route path="/signup" element={<SignupPage />} />
+//         <Route path="/about" element={<AboutUs />} />
+//       </Routes>
+//     </Router>
+//   );
+// }
+
+// export default App;
+
+
+// Signup 
+// import { useState } from "react";
+// import { motion } from "framer-motion";
+// import { auth } from "../Firebase";
+// import { createUserWithEmailAndPassword } from "firebase/auth";
+// import { useNavigate } from "react-router-dom";
+
+// const Signup = () => {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const navigate = useNavigate();
+
+//   const handleSignup = async () => {
+//     try {
+//       await createUserWithEmailAndPassword(auth, email, password);
+//       alert("Signed up successfully! Let's Login now");
+//       navigate("/login")
+//     } catch (error) {
+//       alert(error.message);
+//       console.error("Signup Error:", error);
+//     }
+//   };
+
+//   return (
+//     <div
+//       style={{
+//         position: 'relative',
+//         minHeight: '100vh',
+//         overflow: 'hidden',
+//       }}
+//     >
+//       {/* Background image */}
+//       <div
+//         style={{
+//           backgroundImage: 'url("/images/background.png")',
+//           backgroundSize: 'cover',
+//           backgroundPosition: 'center',
+//           position: 'absolute',
+//           top: 0,
+//           left: 0,
+//           width: '100%',
+//           height: '100%',
+//           zIndex: -1,
+//           opacity: 0.7,
+//         }}
+//       ></div>
+//     <motion.div
+//       initial={{ opacity: 0, y: 50 }}
+//       animate={{ opacity: 1, y: 0 }}
+//       transition={{ duration: 0.5 }}
+//     >
+//       <div
+//         className="d-flex justify-content-center align-items-center"
+//         style={{ height: "100vh" }}
+//       >
+//         <div className="card p-4" style={{ maxWidth: "400px", width: "100%" }}>
+//           <h2>Signup</h2>
+//           <input
+//             className="form-control mb-2"
+//             placeholder="Email"
+//             value={email}
+//             onChange={(e) => setEmail(e.target.value)}
+//           />
+//           <input
+//             className="form-control mb-2"
+//             type="password"
+//             placeholder="Password"
+//             value={password}
+//             onChange={(e) => setPassword(e.target.value)}
+//           />
+//           <motion.button
+//             className="btn btn-success"
+//             whileHover={{ scale: 1.05 }}
+//             onClick={handleSignup}
+//           >
+//             Signup
+//           </motion.button>
+//           <p className="text-center mt-3">
+//             Already have an account?{" "}
+//             <motion.span
+//               style={{
+//                 color: "#0d6efd",
+//                 cursor: "pointer",
+//                 fontWeight: "bold",
+//               }}
+//               whileHover={{ scale: 1.1 }}
+//               onClick={() => navigate("/login")}
+//             >
+//               Login
+//             </motion.span>
+//           </p>
+//         </div>
+//       </div>
+//     </motion.div>
+//     </div>
+//   );
+// };
+
+// export default Signup;
+
+
+
+// Dashboard 
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { motion } from "framer-motion";
+import axios from "axios";
+import L from "leaflet";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
+import "leaflet-geosearch/dist/geosearch.css";
+import { database } from "../Firebase";
+import { ref, onValue } from "firebase/database";
+import { useNavigate } from "react-router-dom";
+import "leaflet/dist/leaflet.css";
+
+const Dashboard = ({ token, setToken, onLogout }) => {
+  const [spots, setSpots] = useState([]);
+  const [searchId, setSearchId] = useState("");
+  const [forecast, setForecast] = useState(null);
+  const [filter, setFilter] = useState("All");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userType");
+
+    // Check if setToken exists before calling it
+    if (onLogout && typeof onLogout === "function") {
+      onLogout();
+      console.log("onLogout called");
+    } else if (setToken && typeof setToken === "function") {
+      setToken(null);
+      console.log("setToken called");
+    } else {
+      console.warn("No Logout function available, using fallback");
+      window.location.href = "/";
+      return;
+    }
+    navigate("/");
+  };
+
+  useEffect(() => {
+    if (token) {
+      // Only fetch data if user is logged in
+      const fetchSpots = async () => {
+        try {
+          const res = await axios.get("http://localhost:8000/cadmin/parking-spots/", {
+            headers: { Authorization: `Token ${token}` },
+          });
+          setSpots(res.data);
+
+          const f = await axios.get("http://localhost:8000/api/forecast/", {
+            headers: { Authorization: `Token ${token}` },
+          });
+          setForecast(f.data[0]);
+        } catch (err) {
+          console.error("Error fetching from API:", err);
+        }
+      };
+      fetchSpots();
+
+      // Firebase Realtime Database listener (only when logged in)
+      const spotsRef = ref(database, "parking-spots");
+      const unsubscribe = onValue(spotsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const updatedSpots = Object.keys(data).map((id) => ({
+            spot_id: parseInt(id),
+            status: data[id].status,
+            timestamp: data[id].timestamp,
+          }));
+          setSpots(updatedSpots);
+        }
+      });
+
+      return () => unsubscribe();
+    } else {
+      // Reset spots when logged out
+      setSpots([]);
+      setForecast(null);
+    }
+  }, [token]);
+
+  // Filtered Spots
+  const filteredSpots = spots.filter((spot) => {
+    const matchId = !searchId || spot.spot_id === parseInt(searchId);
+    const matchStatus =
+      filter === "All" || spot.status.toLowerCase() === filter.toLowerCase();
+    return matchId && matchStatus;
+  });
+
+  // Search Container[advanced]
+  const SearchField = () => {
+    const map = useMap();
+
+    useEffect(() => {
+      if (!token) return;
+      // Clear any existing markers from previous searches
+      const searchMarkers = [];
+
+      const handleSearch = async (query, showAllResults = false) => {
+        try {
+          const provider = new OpenStreetMapProvider();
+          const results = await provider.search({ query });
+
+          if (results && results.length > 0) {
+            // Clear previous search markers
+            searchMarkers.forEach((marker) => map.removeLayer(marker));
+            searchMarkers.length = 0;
+
+            const firstResult = results[0];
+            const { x, y } = firstResult;
+
+            if (!isNaN(y) && !isNaN(x)) {
+              // Center map on the result (only if not just showing suggestions)
+              if (!showAllResults) {
+                map.setView([y, x], 13);
+              }
+
+              // Create a custom icon for better visibility
+              const customIcon = new L.Icon({
+                iconUrl:
+                  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+                iconRetinaUrl:
+                  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+                shadowUrl:
+                  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41],
+              });
+
+              // Add a marker for the search result
+              const marker = L.marker([y, x], {
+                icon: customIcon,
+                title: firstResult.label,
+              }).addTo(map).bindPopup(`
+                <div style="text-align: center; min-width: 200px;">
+                  <b style="font-size: 14px;">${firstResult.label}</b><br/>
+                  <small style="color: #666;">${
+                    firstResult.raw?.class || "Location"
+                  }</small>
+                  <div style="margin-top: 8px;">
+                    <button onclick="window.dispatchEvent(new CustomEvent('zoomToLocation', { detail: { lat: ${y}, lng: ${x} } }))" 
+                      style="background: #4FC3F7; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                      Zoom Here
+                    </button>
+                  </div>
+                </div>
+              `);
+
+              // Make sure marker is clickable
+              marker.on("click", function (e) {
+                this.openPopup();
+                map.setView(e.latlng, 15); // Zoom in when clicked
+              });
+
+              // Only open popup if this is the main search result
+              if (!showAllResults) {
+                marker.openPopup();
+              }
+
+              searchMarkers.push(marker);
+
+              // Add markers for other results too when doing main search
+              if (!showAllResults && results.length > 1) {
+                results.slice(1, 5).forEach((result) => {
+                  const resultMarker = L.marker([result.y, result.x], {
+                    icon: customIcon,
+                    title: result.label,
+                  }).addTo(map).bindPopup(`
+                    <div style="text-align: center; min-width: 200px;">
+                      <b style="font-size: 14px;">${result.label}</b><br/>
+                      <small style="color: #666;">${
+                        result.raw?.class || "Location"
+                      }</small>
+                      <div style="margin-top: 8px;">
+                        <button onclick="window.dispatchEvent(new CustomEvent('zoomToLocation', { detail: { lat: ${
+                          result.y
+                        }, lng: ${result.x} } }))" 
+                          style="background: #4FC3F7; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                          Zoom Here
+                        </button>
+                      </div>
+                    </div>
+                  `);
+
+                  resultMarker.on("click", function (e) {
+                    this.openPopup();
+                    map.setView(e.latlng, 15);
+                  });
+
+                  searchMarkers.push(resultMarker);
+                });
+              }
+            }
+          } else if (!showAllResults) {
+            // No results found (only show for main search, not suggestions)
+            const noResultsMarker = L.marker(map.getCenter(), {
+              title: "No results found",
+            })
+              .addTo(map)
+              .bindPopup(
+                `
+              <div style="text-align: center;">
+                <b>No results found</b><br/>
+                <small>Try a different search term</small>
+              </div>
+            `
+              )
+              .openPopup();
+
+            noResultsMarker.on("click", function (e) {
+              this.openPopup();
+            });
+
+            searchMarkers.push(noResultsMarker);
+          }
+
+          return results;
+        } catch (error) {
+          console.error("Search error:", error);
+
+          if (!showAllResults) {
+            // Show error marker
+            const errorMarker = L.marker(map.getCenter(), {
+              title: "Search Error",
+            })
+              .addTo(map)
+              .bindPopup(
+                `
+              <div style="text-align: center; color: red;">
+                <b>Search Error</b><br/>
+                <small>Please try again</small>
+              </div>
+            `
+              )
+              .openPopup();
+
+            errorMarker.on("click", function (e) {
+              this.openPopup();
+            });
+
+            searchMarkers.push(errorMarker);
+          }
+
+          return [];
+        }
+      };
+
+      // Create a custom search control with better styling
+      const searchContainer = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control custom-search-container"
+      );
+      searchContainer.style.backgroundColor = "white";
+      searchContainer.style.borderRadius = "4px";
+      searchContainer.style.padding = "5px";
+      searchContainer.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+      searchContainer.style.position = "relative";
+
+      searchContainer.innerHTML = `
+      <div style="display: flex; align-items: center; position: relative;">
+        <input 
+          type="text" 
+          placeholder="Search for parking place..." 
+          style="
+            width: 100%;
+            max-width:300px; 
+            padding: 8px 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px 0 0 4px;
+            border-right: none;
+            outline: none;
+            font-size: 14px;
+          "
+        />
+        <button 
+          style="
+            padding: 8px 16px;
+            background: #4FC3F7;
+            color: white;
+            border: 1px solid #4FC3F7;
+            borderRadius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+          "
+        >
+          Search
+        </button>
+      </div>
+      <div class="search-suggestions" style="
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ccc;
+        border-top: none;
+        borderRadius: 0 0 4px 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      "></div>
+    `;
+
+      const searchInput = searchContainer.querySelector("input");
+      const searchButton = searchContainer.querySelector("button");
+      const suggestionsDropdown = searchContainer.querySelector(
+        ".search-suggestions"
+      );
+
+      // Function to show suggestions
+      const showSuggestions = (results) => {
+        if (!results || results.length === 0) {
+          suggestionsDropdown.style.display = "none";
+          return;
+        }
+
+        const suggestionsHTML = results
+          .slice(0, 8)
+          .map(
+            (result) => `
+        <div class="suggestion-item" style="
+          padding: 10px 12px;
+          cursor: pointer;
+          border-bottom: 1px solid #f0f0f0;
+          transition: background-color 0.2s;
+        " data-label="${result.label.replace(/"/g, "&quot;")}" 
+           data-x="${result.x}" 
+           data-y="${result.y}">
+          <div style="font-weight: 500; font-size: 13px;">${result.label}</div>
+          <div style="font-size: 11px; color: #666; margin-top: 2px;">
+            ${result.raw?.type || result.raw?.class || "Location"}
+          </div>
+        </div>
+      `
+          )
+          .join("");
+
+        suggestionsDropdown.innerHTML = suggestionsHTML;
+        suggestionsDropdown.style.display = "block";
+
+        // Add click event listeners to suggestion items
+        suggestionsDropdown
+          .querySelectorAll(".suggestion-item")
+          .forEach((item) => {
+            item.addEventListener("click", () => {
+              const label = item.getAttribute("data-label");
+              // const x = parseFloat(item.getAttribute("data-x"));
+              // const y = parseFloat(item.getAttribute("data-y"));
+
+              searchInput.value = label;
+              suggestionsDropdown.style.display = "none";
+
+              // Perform the search with the selected suggestion
+              handleSearch(label);
+            });
+
+            // Hover effects
+            item.addEventListener("mouseenter", () => {
+              item.style.backgroundColor = "#f5f5f5";
+            });
+
+            item.addEventListener("mouseleave", () => {
+              item.style.backgroundColor = "white";
+            });
+          });
+      };
+
+      // Function to hide suggestions
+      const hideSuggestions = () => {
+        suggestionsDropdown.style.display = "none";
+      };
+
+      // Search on button click
+      searchButton.addEventListener("click", () => {
+        if (searchInput.value.trim().length > 0) {
+          hideSuggestions();
+          handleSearch(searchInput.value.trim());
+        }
+      });
+
+      // Search on Enter key
+      searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && searchInput.value.trim().length > 0) {
+          hideSuggestions();
+          handleSearch(searchInput.value.trim());
+        }
+      });
+
+      // Show suggestions as you type
+      let timeoutId;
+      searchInput.addEventListener("input", (e) => {
+        clearTimeout(timeoutId);
+        const query = e.target.value.trim();
+
+        if (query.length > 2) {
+          timeoutId = setTimeout(async () => {
+            const results = await handleSearch(query, true);
+            showSuggestions(results);
+          }, 300);
+        } else {
+          hideSuggestions();
+        }
+      });
+
+      // Hide suggestions when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!searchContainer.contains(e.target)) {
+          hideSuggestions();
+        }
+      });
+
+      // Hide suggestions when input loses focus (with delay to allow clicking suggestions)
+      searchInput.addEventListener("blur", () => {
+        setTimeout(hideSuggestions, 200);
+      });
+
+      // Custom control class
+      L.Control.CustomSearch = L.Control.extend({
+        onAdd: function (map) {
+          return searchContainer;
+        },
+
+        onRemove: function (map) {
+          searchMarkers.forEach((marker) => map.removeLayer(marker));
+          searchMarkers.length = 0;
+          document.removeEventListener("click", hideSuggestions);
+        },
+      });
+
+      // Add search control to map
+      new L.Control.CustomSearch({ position: "topright" }).addTo(map);
+
+      return () => {
+        searchMarkers.forEach((marker) => map.removeLayer(marker));
+        if (searchContainer.parentNode) {
+          searchContainer.parentNode.removeChild(searchContainer);
+        }
+        document.removeEventListener("click", hideSuggestions);
+      };
+    }, [map]);
+
+    return null;
+  };
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        overflow: "hidden",
+      }}
+    >
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          backgroundColor: "rgba(57, 46, 46, 0.7)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px 20px",
+          zIndex: 10,
+        }}
+      >
+        <a
+          href="/"
+          style={{
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <img
+            src="/images/brand.png"
+            alt="Smart Parking Logo"
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "8px",
+              boxShadow: "0 0 10px rgba(79,195,247,0.6)",
+            }}
+          />
+          <h2
+            style={{
+              color: "#4FC3F7",
+              fontWeight: "600",
+              letterSpacing: "0.5px",
+              fontSize: "1.5rem",
+              margin: 0,
+              transition: "color 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.color = "#BBE1FA")}
+            onMouseLeave={(e) => (e.target.style.color = "#4FC3F7")}
+          >
+            Smart Parking
+          </h2>
+        </a>
+
+        <nav style={{ display: "flex", gap: "15px" }}>
+          <button
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid #4FC3F7",
+              color: "#4FC3F7",
+              borderRadius: "8px",
+              padding: "8px 16px",
+              curosr: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onClick={() => navigate("/about")}
+          >
+            About Us
+          </button>
+
+          {token ? (
+            // logged in state - show logout button
+            <button
+              style={{
+                backgroundColor: "#ff4444",
+                border: "none",
+                color: "white",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          ) : (
+            // Logged out state - show Login button
+            <button
+              style={{
+                backgroundColor: "#4FC3F7",
+                border: "none",
+                color: "black",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+          )}
+        </nav>
+      </header>
+
+      {/* Background image */}
+      <div
+        style={{
+          backgroundImage: 'url("/images/bg-dashboard.jpg")',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100vh",
+          zIndex: -1,
+          opacity: 0.7,
+        }}
+      ></div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="container">
+          {/* <h1 style={{ color: '#4FC3F7' }}>Smart Parking Dashboard</h1> */}
+          {token && (
+            <>
+              <input
+                className="form-control mb-2 mt-4"
+                placeholder="Search Spot ID"
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+                // style={{ marginTop: "10px" }}
+              />
+
+              <select
+                className="form-control mb-2"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+              >
+                <option>Filter: All</option>
+                <option>Free</option>
+                <option>Occupied</option>
+              </select>
+            </>
+          )}
+
+          {token && forecast && (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              style={{
+                backgroundColor: "rgba(0,0,0,0.6)",
+                padding: "15px",
+                borderRadius: "10px",
+                color: "white",
+                textAlign: "center",
+                marginBottom: "15px",
+              }}
+            >
+              <h4>🚗 Predicted Occupancy in 1 Hour:</h4>
+              <p style={{ fontSize: "20px", color: "#4FC3F7" }}>
+                {forecast.yhat.toFixed(1)} spots
+              </p>
+            </motion.div>
+          )}
+
+          <MapContainer
+            center={[55.65326433931066, 12.569958569333638]}
+            zoom={14}
+            style={{ height: "500px", marginTop: "20px" }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {token && <SearchField />}
+
+            {token &&
+              filteredSpots.map((spot) => (
+                <Marker
+                  key={spot.spot_id}
+                  position={[
+                    55.65326433931066 + spot.spot_id * 0.001,
+                    12.569958569333638 + spot.spot_id * 0.001,
+                  ]}
+                >
+                  <Popup>
+                    Spot {spot.spot_id}: {spot.status}
+                  </Popup>
+                </Marker>
+              ))}
+          </MapContainer>
+          {/* Call to action when logged in */}
+          {token && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{
+                backgroundColor: "rgba(0,0,0,0.6)",
+                padding: "30px",
+                borderRadius: "10px",
+                color: "white",
+                textAlign: "center",
+                marginTop: "20px",
+              }}
+            >
+              <h3>Welcome to Smart Parking System</h3>
+              <p>
+                You can now see the available parking slots and predictions with
+                an ease. Enjoy the site developed by the team <h4>MOSK</h4>
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  onClick={() => navigate("/about")}
+                  style={{
+                    backgroundColor: "#4FC3F7",
+                    border: "none",
+                    color: "white",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Wanna view the team?
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Call to action when not logged in */}
+          {!token && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{
+                backgroundColor: "rgba(0,0,0,0.6)",
+                padding: "30px",
+                borderRadius: "10px",
+                color: "white",
+                textAlign: "center",
+                marginTop: "20px",
+              }}
+            >
+              <h3>Smart Parking System</h3>
+              <p>
+                Login to access real-time parking spot information and
+                predictions
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  onClick={() => navigate("/login")}
+                  style={{
+                    backgroundColor: "#4FC3F7",
+                    border: "none",
+                    color: "white",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => navigate("/signup")}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid #4FC3F7",
+                    color: "#4FC3F7",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Sign Up
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
+      <footer
+        style={{
+          background: "linear-gradient(90deg, #1e1e1e, #433d3dff)",
+          color: "#bdbdbd",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "15px",
+          marginTop: "20px",
+        }}
+      >
+        <p>© 2025 Smart Parking System | All Rights Reserved</p>
+      </footer>
+    </div>
+  );
+};
+
+export default Dashboard;
