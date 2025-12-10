@@ -43,6 +43,17 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
                   <span className="badge bg-info" style={{ fontSize: '0.7rem' }}>
                     <i className="bi bi-broadcast"></i> Live
                   </span>
+                  <span className={`badge ${selectedLot?.id === lot.id ? 'bg-light text-dark' : 'bg-success'}`} style={{ fontSize: '0.7rem' }}>
+                    {lot.price_per_hour && lot.price_per_hour > 0 ? (
+                      <>
+                        <i className="bi bi-currency-dollar"></i> {lot.price_per_hour} DKK/h
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-gift"></i> Free
+                      </>
+                    )}
+                  </span>
                   {lot.distance !== undefined && lot.distance !== null && (
                     <span className={selectedLot?.id === lot.id ? 'text-white-50' : 'text-muted'} style={{ fontSize: '0.875rem' }}>
                       <i className="bi bi-compass me-1"></i>
@@ -67,15 +78,6 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
                   <i className="bi bi-geo-alt me-1"></i>
                   {lot.address}
                 </small>
-                
-                {lot.price_per_hour !== undefined && lot.price_per_hour !== null && (
-                  <div className="mt-1">
-                    <small className={selectedLot?.id === lot.id ? 'text-white' : 'text-success'}>
-                      <i className="bi bi-currency-dollar me-1"></i>
-                      {lot.price_per_hour} DKK/hour
-                    </small>
-                  </div>
-                )}
 
                 <div className="mt-2">
                   <LiveOccupancyIndicator

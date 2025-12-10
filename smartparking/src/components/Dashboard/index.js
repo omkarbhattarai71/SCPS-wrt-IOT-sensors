@@ -50,7 +50,7 @@ const Dashboard = () => {
 
       const data = await response.json();
       showSuccess("Parking lot created successfully!");
-      
+
       // Trigger refetch of parking lots list
       window.location.reload();
     } catch (error) {
@@ -60,7 +60,30 @@ const Dashboard = () => {
   };
 
   const handleUpdateLot = async (lotId, formData) => {
-    // TODO: Implement update functionality when fields are editable
+    try {
+      const response = await fetch(process.env.REACT_APP_API_URL + "/cadmin/parking-lots/", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: lotId, ...formData })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update parking lot");
+      }
+
+      const data = await response.json();
+      showSuccess("Parking lot updated successfully!");
+
+      // Trigger refetch of parking lots list
+      window.location.reload();
+    } catch (error) {
+      showError(error.message || "Failed to update parking lot");
+      console.error("Error updating parking lot:", error);
+    }
   };
 
   const handleDeleteLot = async (lot) => {
@@ -110,8 +133,8 @@ const Dashboard = () => {
 
   return (
     <div style={containerStyle}>
-      <Header 
-        token={token} 
+      <Header
+        token={token}
         onLogout={handleLogout}
         onBrowseParking={handleBrowseParking}
       />
@@ -128,7 +151,7 @@ const Dashboard = () => {
           <div className="row" style={{ minHeight: "calc(100vh - 250px)" }}>
             <div className="col-md-4">
               <div style={{ height: "60%", marginBottom: "20px", maxHeight: "calc(60vh - 150px)", overflowY: "auto" }}>
-                <ParkingLotList 
+                <ParkingLotList
                   parkingLots={parkingLots}
                   loading={loading}
                   selectedLot={selectedLot}
@@ -137,7 +160,7 @@ const Dashboard = () => {
                 />
               </div>
               <div style={{ height: "38%" }}>
-                <ManageParkingLot 
+                <ManageParkingLot
                   selectedLot={selectedLot}
                   onUpdate={handleUpdateLot}
                   onDelete={handleDeleteLot}
@@ -145,8 +168,8 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="col-md-8" style={{ height: "calc(100vh - 180px)" }}>
-              <ParkingMap 
-                token={token} 
+              <ParkingMap
+                token={token}
                 parkingLots={parkingLots}
                 selectedLot={selectedLot}
                 onSelectLot={setSelectedLot}
@@ -156,7 +179,7 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
-      <AddParkingLotModal 
+      <AddParkingLotModal
         show={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSubmit={handleSubmitNewLot}

@@ -15,19 +15,47 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
+// Helper function to get dollar sign indicator based on price
+const getPriceIndicator = (price) => {
+  if (!price || price === 0) return ''; // Free
+  if (price <= 10) return '$';
+  if (price <= 25) return '$$';
+  if (price <= 50) return '$$$';
+  return '$$$'; // Over 50 DKK
+};
+
 // Create custom marker icon with occupancy indicator
-const createOccupancyMarkerIcon = (occupied, total, isSelected) => {
+const createOccupancyMarkerIcon = (occupied, total, isSelected, pricePerHour) => {
   const percentage = total > 0 ? (occupied / total) * 100 : 0;
   const color = percentage > 80 ? '#dc3545' : percentage > 50 ? '#ffc107' : '#28a745';
   const selectedStyle = isSelected ? 'border: 3px solid #0d6efd; box-shadow: 0 0 15px rgba(13, 110, 253, 0.6);' : '';
   const size = isSelected ? 48 : 40;
-  
+  const priceIndicator = getPriceIndicator(pricePerHour);
+
   const html = `
     <div style="
       position: relative;
       width: ${size}px;
       height: ${size}px;
     ">
+      ${priceIndicator ? `
+        <div style="
+          position: absolute;
+          top: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.75);
+          color: #FFD700;
+          padding: 2px 6px;
+          border-radius: 10px;
+          font-size: ${isSelected ? '12px' : '10px'};
+          font-weight: bold;
+          white-space: nowrap;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        ">
+          ${priceIndicator}
+        </div>
+      ` : ''}
       <div style="
         width: ${size}px;
         height: ${size}px;
@@ -95,7 +123,7 @@ const LiveMarker = ({ lot, isSelected, onSelectLot }) => {
 
   useEffect(() => {
     let unsubscribeFirestore;
-    
+
     // Subscribe to Firestore for occupancy
     const eventlistRef = doc(firestore, 'eventlists', String(lot.id));
     unsubscribeFirestore = onSnapshot(
@@ -105,7 +133,7 @@ const LiveMarker = ({ lot, isSelected, onSelectLot }) => {
           const data = docSnapshot.data();
           const events = data.events || [];
           const latestEvent = events[events.length - 1];
-          
+
           if (latestEvent) {
             const occupiedSpots = latestEvent.occupied_spots || [];
             setOccupiedCount(occupiedSpots.length);
@@ -124,11 +152,13 @@ const LiveMarker = ({ lot, isSelected, onSelectLot }) => {
 
   // Use capacity from the lot object (already fetched in parking lots API)
   const total = lot.capacity || 0;
+  const pricePerHour = lot.price_per_hour || 0;
 
   const markerIcon = createOccupancyMarkerIcon(
     occupiedCount,
     total,
-    isSelected
+    isSelected,
+    pricePerHour
   );
 
   return (
@@ -150,16 +180,16 @@ const LiveMarker = ({ lot, isSelected, onSelectLot }) => {
  * @param {Function} onSelectLot - Callback when a parking lot is selected
  * @param {Object} style - Additional styles for the map container
  */
-const ParkingMapCommon = ({ 
-  parkingLots, 
-  selectedLot, 
-  onSelectLot, 
-  style = {} 
+const ParkingMapCommon = ({
+  parkingLots,
+  selectedLot,
+  onSelectLot,
+  style = {}
 }) => {
-  const defaultStyle = { 
-    height: "100%", 
+  const defaultStyle = {
+    height: "100%",
     width: "100%",
-    ...style 
+    ...style
   };
 
   return (
