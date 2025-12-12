@@ -180,9 +180,11 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
               <div className="flex-grow-1">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <strong>{lot.name}</strong>
-                  <span className="badge bg-info" style={{ fontSize: '0.7rem' }}>
-                    <i className="bi bi-broadcast"></i> Live
-                  </span>
+                  {lot.capacity > 0 && (
+                    <span className="badge bg-info" style={{ fontSize: '0.7rem' }}>
+                      <i className="bi bi-broadcast"></i> Live
+                    </span>
+                  )}
                   <span className={`badge ${selectedLot?.id === lot.id ? 'bg-light text-dark' : 'bg-success'}`} style={{ fontSize: '0.7rem' }}>
                     {lot.price_per_hour && lot.price_per_hour > 0 ? (
                       <>
