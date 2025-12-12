@@ -12,7 +12,10 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const { handleSignup } = useSignup();
   const { loading } = useAuth();
+  const [showPassword, setShowPassword] = useState(false); 
 
+
+ 
   return (
     <BackgroundWrapper>
       <AuthCard title="Signup">
@@ -21,12 +24,29 @@ const Signup = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+        <div style={{ position: "relative", width: "100%" }}>
         <AuthInput
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute",
+              right: "14px",
+              top: "38%",
+              transform: "translateY(-50%)",
+              cursor: "pointer",
+              fontSize: "14px",
+              color: "#007bff",
+              userSelect: "none",
+            }}
+          >
+            {showPassword ? "hide" : "show"}
+          </span>
+          </div>
 
         <AuthButton
           className="btn btn-success"
