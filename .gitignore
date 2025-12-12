@@ -211,3 +211,5 @@ _marimo_/
 .DS_Store
 
 *firebase-admin*.json
+
+**.json

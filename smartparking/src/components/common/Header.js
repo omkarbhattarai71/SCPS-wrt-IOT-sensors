@@ -1,17 +1,44 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { COLORS } from "../../constants/parkingConstants";
 import { AUTH_COLORS } from "../../constants/authConstants";
 
-const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoToDashboard, onRequestOperator, checkingRole, onBrowseParking, operatorRequestStatus }) => {
+const Header = ({
+  variant = "dashboard",
+  token,
+  onLogout,
+  isCityOperator,
+  onGoToDashboard,
+  onRequestOperator,
+  checkingRole,
+  onBrowseParking,
+  operatorRequestStatus,
+  onCancelOperator,
+}) => {
   const navigate = useNavigate();
+
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const variants = {
     dashboard: {
       backgroundColor: COLORS.dark,
       borderBottom: "none",
       primaryColor: COLORS.primary,
+
       dangerColor: COLORS.danger,
       blackColor: "black",
     },
@@ -29,33 +56,57 @@ const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoTo
   const headerStyle = {
     position: "sticky",
     top: 0,
-    backgroundColor: currentVariant.backgroundColor,
+    // backgroundColor: currentVariant.backgroundColor,
+    backgroundColor: "#38997aff",
+
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: variant === "aboutUs" ? "15px 30px" : "10px 20px",
-    zIndex: 10,
+    padding: "14px 28px",
+    zIndex: 50,
     borderBottom: currentVariant.borderBottom,
+    backdropFilter: "blur(6px)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
   };
 
+  const brandStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    cursor: "pointer",
+  };
+
+  const logoStyle = {
+    height: "32px",
+    width: "32px",
+    borderRadius: "6px",
+    objectFit: "cover",
+  };
   const titleStyle = {
-    color: currentVariant.primaryColor,
     margin: 0,
-    textAlign: variant === "aboutUs" ? "center" : "left",
+    // color: currentVariant.primaryColor,
+    color: "#495668ff",
+    fontSize: "22px",
+    fontWeight: "700",
+    letterSpacing: "0.5px",
+    cursor: "pointer",
+    onhover: { color: "#5dda14ff", scale: 1.05 },
   };
 
   const navStyle = {
     display: "flex",
-    gap: "15px",
+    alignItems: "center",
+    gap: "12px",
   };
 
   const buttonBaseStyle = {
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 16px",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
+    borderRadius: "10px",
+    padding: "8px 18px",
     fontWeight: "600",
+    cursor: "pointer",
+    border: "none",
+    fontSize: "15px",
+    transition: "all 0.25s ease",
   };
 
   const aboutButtonStyle = {
@@ -121,9 +172,11 @@ const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoTo
 
   return (
     <header style={headerStyle}>
-      <a href="/" style={{ textDecoration: "none" }}>
-        <h2 style={titleStyle}>Smart Parking Dashboard</h2>
-      </a>
+      <div style={brandStyle} onClick={() => navigate("/")}>
+        <img src="/images/favicon.png" alt="logo" style={logoStyle} />
+        <h2 style={titleStyle}>Smart Parking</h2>
+      </div>
+
       <nav style={navStyle}>
         <button style={aboutButtonStyle} onClick={() => navigate("/about")}>
           About Us
@@ -136,31 +189,71 @@ const Header = ({ variant = "dashboard", token, onLogout, isCityOperator, onGoTo
           </button>
         )}
 
-        {token && !checkingRole && (
-          isCityOperator ? (
-            onGoToDashboard && (
-              <button style={dashboardButtonStyle} onClick={onGoToDashboard}>
-                <i className="bi bi-speedometer2 me-1"></i>
-                Dashboard
-              </button>
-            )
-          ) : (
-            onRequestOperator && (
-              <button 
-                style={requestOperatorButtonStyle} 
-                onClick={onRequestOperator}
-                disabled={operatorRequestStatus === 'pending'}
-              >
-                <i className="bi bi-person-badge me-1"></i>
-                {operatorRequestStatus === 'pending' 
-                  ? 'Request Pending' 
-                  : operatorRequestStatus === 'rejected'
-                  ? 'Resubmit Request'
-                  : 'Request Operator'}
-              </button>
-            )
-          )
-        )}
+        {token &&
+          !checkingRole &&
+          (isCityOperator
+            ? onGoToDashboard && (
+                <button style={dashboardButtonStyle} onClick={onGoToDashboard}>
+                  <i className="bi bi-speedometer2 me-1"></i>
+                  Dashboard
+                </button>
+              )
+            : onRequestOperator && (
+                <div
+                  style={{ position: "relative", display: "inline-block" }}
+                  ref={dropdownRef}
+                >
+                  
+                  <button
+                    style={requestOperatorButtonStyle}
+                    onClick={
+                      operatorRequestStatus === "pending"
+                        ? () => setShowDropdown((prev) => !prev)
+                        : onRequestOperator
+                    }
+                  >
+                    <i className="bi bi-person-badge me-1"></i>
+
+                    {operatorRequestStatus === "pending" ? (
+                      <>Request Pending ⏷</>
+                    ) : operatorRequestStatus === "rejected" ||
+                      operatorRequestStatus === "cancelled" ||
+                      operatorRequestStatus === null ? (
+                      "Request Operator"
+                    ) : (
+                      "Request Operator"
+                    )}
+                  </button>
+                  {/* Dropdown for cancel */}
+                  {operatorRequestStatus === "pending" && showDropdown && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "110%",
+                        right: 0,
+                        backgroundColor: "white",
+                        border: "1px solid #ccc",
+                        borderRadius: "6px",
+                        padding: "8px 12px",
+                        cursor: "pointer",
+                        zIndex: 1000,
+                        whiteSpace: "nowrap",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Header: Cancel Request clicked, onCancelOperator present=', !!onCancelOperator);
+                        if (onCancelOperator) {
+                          onCancelOperator();
+                        }
+                        setShowDropdown(false);
+                      }}
+                    >
+                      Cancel Request
+                    </div>
+                  )}
+                </div>
+              ))}
 
         {token ? (
           <button style={logoutButtonStyle} onClick={onLogout}>

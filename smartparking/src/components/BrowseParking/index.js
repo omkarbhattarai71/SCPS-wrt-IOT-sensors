@@ -143,6 +143,45 @@ const BrowseParking = () => {
     }
   };
 
+  const handleCancelOperator = async () => {
+    console.log('BrowseParking: handleCancelOperator called, token present=', !!token);
+    if (!token) {
+      showError('You must be logged in to cancel the request.');
+      return;
+    }
+
+    // Optimistically update UI
+    const prevStatus = operatorRequestStatus;
+    setOperatorRequestStatus(null);
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/request-operator-access/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        // revert
+        setOperatorRequestStatus(prevStatus);
+        const msg = data.error || 'Failed to cancel operator request';
+        throw new Error(msg);
+      }
+
+      showSuccess(data.message || 'Operator request cancelled');
+
+      // Refresh role
+      await checkUserRole();
+    } catch (err) {
+      console.error('Error cancelling operator request:', err);
+      showError(err.message || 'Failed to cancel operator request');
+    }
+  };
+
   const fetchParkingLots = async () => {
     setLoading(true);
     try {
@@ -252,6 +291,7 @@ const BrowseParking = () => {
         isCityOperator={isCityOperator}
         onGoToDashboard={handleGoToDashboard}
         onRequestOperator={handleRequestOperatorAccess}
+        onCancelOperator={handleCancelOperator}
         checkingRole={checkingRole}
         operatorRequestStatus={operatorRequestStatus}
       />
