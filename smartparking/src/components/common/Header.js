@@ -90,10 +90,10 @@ const Header = ({
     fontWeight: "700",
     letterSpacing: "0.5px",
     cursor: "pointer",
-    onhover: { color:"#5dda14ff", scale: 1.05 },
+    onhover: { color: "#5dda14ff", scale: 1.05 },
   };
 
-  const navStyle = {  
+  const navStyle = {
     display: "flex",
     alignItems: "center",
     gap: "12px",
@@ -194,25 +194,67 @@ const Header = ({
           !checkingRole &&
           (isCityOperator
             ? onGoToDashboard && (
-                <button style={dashboardButtonStyle} onClick={onGoToDashboard}>
-                  <i className="bi bi-speedometer2 me-1"></i>
-                  Dashboard
-                </button>
-              )
+              <button style={dashboardButtonStyle} onClick={onGoToDashboard}>
+                <i className="bi bi-speedometer2 me-1"></i>
+                Dashboard
+              </button>
+            )
             : onRequestOperator && (
+              <div
+                style={{ position: "relative", display: "inline-block" }}
+                ref={dropdownRef}
+              >
+
                 <button
                   style={requestOperatorButtonStyle}
-                  onClick={onRequestOperator}
-                  disabled={operatorRequestStatus === "pending"}
+                  onClick={
+                    operatorRequestStatus === "pending"
+                      ? () => setShowDropdown((prev) => !prev)
+                      : onRequestOperator
+                  }
                 >
                   <i className="bi bi-person-badge me-1"></i>
-                  {operatorRequestStatus === "pending"
-                    ? "Request Pending"
-                    : operatorRequestStatus === "rejected"
-                    ? "Resubmit Request"
-                    : "Request Operator"}
+
+                  {operatorRequestStatus === "pending" ? (
+                    <>Request Pending ⏷</>
+                  ) : operatorRequestStatus === "rejected" ||
+                    operatorRequestStatus === "cancelled" ||
+                    operatorRequestStatus === null ? (
+                    "Request Operator"
+                  ) : (
+                    "Request Operator"
+                  )}
                 </button>
-              ))}
+                {/* Dropdown for cancel */}
+                {operatorRequestStatus === "pending" && showDropdown && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "110%",
+                      right: 0,
+                      backgroundColor: "white",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      zIndex: 1000,
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log('Header: Cancel Request clicked, onCancelOperator present=', !!onCancelOperator);
+                      if (onCancelOperator) {
+                        onCancelOperator();
+                      }
+                      setShowDropdown(false);
+                    }}
+                  >
+                    Cancel Request
+                  </div>
+                )}
+              </div>
+            ))}
 
         {token ? (
           <button style={logoutButtonStyle} onClick={onLogout}>
