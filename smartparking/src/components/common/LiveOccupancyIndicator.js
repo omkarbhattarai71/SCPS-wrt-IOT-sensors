@@ -11,14 +11,16 @@ import { firestore } from '../../Firebase';
  * @param {boolean} showLiveBadge - Whether to show the "Live" badge (default: true)
  * @param {boolean} showPercentage - Whether to show percentage (default: true)
  * @param {boolean} isActive - Whether this is in an active/selected state (for color adaptation)
+ * @param {React.ReactNode} forecastButton - Optional forecast button/badge to display next to occupancy
  */
-const LiveOccupancyIndicator = ({ 
-  parkingLotId, 
+const LiveOccupancyIndicator = ({
+  parkingLotId,
   totalSpots: providedTotalSpots,
   variant = 'full',
   showLiveBadge = true,
   showPercentage = true,
-  isActive = false
+  isActive = false,
+  forecastButton = null
 }) => {
   const [occupancyData, setOccupancyData] = useState(null);
   const [totalSpots, setTotalSpots] = useState(providedTotalSpots || 0);
@@ -28,7 +30,7 @@ const LiveOccupancyIndicator = ({
 
     // Subscribe to Firestore eventlist for live occupancy updates
     const eventlistRef = doc(firestore, 'eventlists', String(parkingLotId));
-    
+
     const unsubscribe = onSnapshot(
       eventlistRef,
       (docSnapshot) => {
@@ -36,7 +38,7 @@ const LiveOccupancyIndicator = ({
           const data = docSnapshot.data();
           const events = data.events || [];
           const latestEvent = events[events.length - 1];
-          
+
           if (latestEvent) {
             const occupiedSpots = latestEvent.occupied_spots || [];
             setOccupancyData({
@@ -92,7 +94,7 @@ const LiveOccupancyIndicator = ({
   // Compact variant - just a small badge with count
   if (variant === 'compact') {
     return (
-      <span 
+      <span
         className={`badge ${progressBarColor}`}
         style={{ fontSize: '0.75rem' }}
       >
@@ -122,9 +124,16 @@ const LiveOccupancyIndicator = ({
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-1">
-        <small className={isActive ? 'text-white' : 'text-dark'}>
-          <strong>{occupied} / {totalSpots}</strong> occupied
-        </small>
+        <div className="d-flex align-items-center gap-2">
+          <small className={isActive ? 'text-white' : 'text-dark'}>
+            <strong>{occupied} / {totalSpots}</strong> occupied
+          </small>
+          {forecastButton && (
+            <div onClick={(e) => e.stopPropagation()}>
+              {forecastButton}
+            </div>
+          )}
+        </div>
         {showPercentage && (
           <small className={isActive ? 'text-white-50' : 'text-muted'}>
             {percentage.toFixed(0)}%

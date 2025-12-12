@@ -5,7 +5,8 @@ import { OpenStreetMapProvider } from 'leaflet-geosearch';
 const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     name: '',
-    address: ''
+    address: '',
+    price: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -27,33 +28,39 @@ const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
 
   const validate = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     }
-    
+
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required';
     }
-    
+
+    if (!formData.price.trim()) {
+      newErrors.price = 'Price is required';
+    } else if (isNaN(formData.price) || parseFloat(formData.price) < 0) {
+      newErrors.price = 'Price must be a valid non-negative number';
+    }
+
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
     setIsGeocoding(true);
-    
+
     try {
       // Geocode the address to get coordinates
       const results = await provider.search({ query: formData.address });
-      
+
       if (results.length === 0) {
         setErrors({ address: 'Could not find coordinates for this address. Please check and try again.' });
         setIsGeocoding(false);
@@ -62,14 +69,15 @@ const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
 
       // Use the first result
       const { y: latitude, x: longitude } = results[0];
-      
+
       const submitData = {
         name: formData.name,
         address: results[0].label,
         latitude: latitude,
-        longitude: longitude
+        longitude: longitude,
+        price_per_hour: parseFloat(formData.price)
       };
-      
+
       onSubmit(submitData);
       handleClose();
     } catch (error) {
@@ -83,7 +91,8 @@ const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
   const handleClose = () => {
     setFormData({
       name: '',
-      address: ''
+      address: '',
+      price: ''
     });
     setErrors({});
     setIsGeocoding(false);
@@ -93,12 +102,12 @@ const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
   if (!show) return null;
 
   return (
-    <div 
-      className="modal show d-block" 
+    <div
+      className="modal show d-block"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={handleClose}
     >
-      <motion.div 
+      <motion.div
         className="modal-dialog modal-dialog-centered"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -108,9 +117,9 @@ const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Add New Parking Lot</h5>
-            <button 
-              type="button" 
-              className="btn-close" 
+            <button
+              type="button"
+              className="btn-close"
               onClick={handleClose}
             ></button>
           </div>
@@ -150,18 +159,36 @@ const AddParkingLotModal = ({ show, onClose, onSubmit }) => {
                   Coordinates will be automatically determined from the address
                 </small>
               </div>
+
+              <div className="mb-3">
+                <label htmlFor="price" className="form-label">
+                  Price per Hour ($) <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className={`form-control ${errors.price ? 'is-invalid' : ''}`}
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="e.g., 5.00"
+                />
+                {errors.price && <div className="invalid-feedback">{errors.price}</div>}
+              </div>
             </div>
             <div className="modal-footer">
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={handleClose}
                 disabled={isGeocoding}
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn btn-success"
                 disabled={isGeocoding}
               >
