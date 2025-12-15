@@ -8,6 +8,7 @@ import DashboardPage from "./pages/DashboardPage";
 import BrowseParkingPage from "./pages/BrowseParkingPage";
 import AboutUs from "./components/Aboutus";
 import "bootstrap/dist/css/bootstrap.min.css";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />  
             <Route path="/about" element={<AboutUs/>}/>
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Routes>
         </Router>
       </AuthProvider>

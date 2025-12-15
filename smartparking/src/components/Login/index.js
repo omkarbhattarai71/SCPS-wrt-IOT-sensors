@@ -11,10 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const {
-    handleLogin,
-    handleGoogleLogin,
-  } = useLogin();
+  const { handleLogin, handleGoogleLogin } = useLogin();
   const { loading } = useAuth();
 
   return (
@@ -32,14 +29,20 @@ const Login = () => {
           onChange={(e) => setPassword(e.target.value)}
           className="form-control mb-3"
         />
-
-        <AuthButton onClick={() => handleLogin(email, password)} disabled={loading}>
+        <AuthButton
+          onClick={() => handleLogin(email, password)}
+          disabled={loading}
+        >
           {loading ? "Logging in..." : "Login"}
         </AuthButton>
-
         <GoogleLoginButton onClick={handleGoogleLogin} loading={loading} />
 
-        <AuthLink to="/signup" text="Don't have an account?" linkText="Signup" />
+        <AuthLink to="/forgot-password" text="" linkText="Forgot password?" />
+        <AuthLink
+          to="/signup"
+          text="Don't have an account?"
+          linkText="Signup"
+        />
       </AuthCard>
     </BackgroundWrapper>
   );
