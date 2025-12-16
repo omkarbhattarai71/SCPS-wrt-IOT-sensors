@@ -98,6 +98,7 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
           },
         }
       );
+      const responseText = await response.text();
       
       if (!response.ok) {
         let errorMessage = 'Failed to fetch forecast';
