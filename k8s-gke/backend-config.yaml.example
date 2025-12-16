@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: smart-parking
+data:
+  DJANGO_DEBUG: "False"
+  HOST_URL: "http://BACKEND_EXTERNAL_IP:8000"  # TODO: Update with actual external IP or domain
+  ALLOWED_HOSTS: "*"  # TODO: Restrict to your domain in production
+  CORS_ALLOWED_ORIGINS: "http://FRONTEND_EXTERNAL_IP,http://localhost"  # TODO: Update
+  DB_HOST: "db"
+  DB_PORT: "5432"
+  FORECAST_SERVICE_URL: "http://predict:8000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secret
+  namespace: smart-parking
+type: Opaque
+stringData:
+  DJANGO_SECRET_KEY: "CHANGE_ME_django_secret_key_here"  # Generate with: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+  FIREBASE_API_KEY: "CHANGE_ME_your_firebase_api_key"
+  GOOGLE_APPLICATION_CREDENTIALS: "smart-city-parking-63aac-firebase-adminsdk-fbsvc-23699e54da.json"
+  POSTGRES_DB: "smart_city_parking_db"
+  POSTGRES_USER: "admin"
+  POSTGRES_PASSWORD: "CHANGE_ME_secure_password"  # Generate with: openssl rand -base64 32
+
+

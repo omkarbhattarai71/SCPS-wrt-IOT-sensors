@@ -219,3 +219,9 @@ k8s/*-config.yaml
 k8s/postgres.yaml
 k8s/frontend.yaml
 k8s/secrets.yaml
+
+# GKE Kubernetes secrets - DO NOT COMMIT
+k8s-gke/*-config.yaml
+k8s-gke/postgres.yaml
+k8s-gke/frontend.yaml
+k8s-gke/secrets.yaml
