@@ -107,15 +107,36 @@ const BrowseParking = () => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          if (!position.coords) {
+            showError('Location requires HTTPS. Showing all parking lots instead.');
+            return;
+          }
+          
           setUserLocation({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
           });
-          // Don't fetch here - the useEffect will handle refetch when userLocation changes
+          showSuccess('Location acquired');
         },
         (error) => {
-          console.error('Error getting location:', error);
-          // Location failed, but we already have results from initial fetch
+          let errorMessage = 'Unable to get your location';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location permission denied';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information unavailable';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out';
+              break;
+          }
+          showError(errorMessage);
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 300000
         }
       );
     }
