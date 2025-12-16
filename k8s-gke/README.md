@@ -80,7 +80,19 @@ Get-ChildItem k8s-gke\*.yaml | ForEach-Object {
 }
 ```
 
-### 5. Deploy to GKE
+### 5. Configure Environment Variables
+
+```bash
+# Copy the example environment file
+cp k8s-gke/.env.example k8s-gke/.env
+
+# Edit k8s-gke/.env and fill in your values:
+# - GCP_PROJECT_ID: Your GCP project ID
+# - Firebase configuration (from your Firebase console or root .env file)
+# - Backend IP will be filled after deploying backend (step 6)
+```
+
+### 6. Deploy Backend Services
 
 ```bash
 # Apply manifests in order
@@ -90,26 +102,44 @@ kubectl apply -f k8s-gke/backend-config.yaml
 kubectl apply -f k8s-gke/backend.yaml
 kubectl apply -f k8s-gke/predict.yaml
 
-# Wait for backend LoadBalancer to get external IP
+# Wait for backend LoadBalancer to get external IP (takes 1-2 minutes)
 kubectl get svc backend -n smart-parking --watch
 
-# Note the EXTERNAL-IP of the backend service
-BACKEND_IP=$(kubectl get svc backend -n smart-parking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo "Backend IP: $BACKEND_IP"
+# Note the EXTERNAL-IP and update k8s-gke/.env with:
+# BACKEND_EXTERNAL_IP=<the-ip-you-see>
+# REACT_APP_API_URL=http://<the-ip-you-see>:8000
+```
 
-# Update backend-config.yaml and frontend.yaml with the backend IP
-# Then rebuild frontend with the correct API URL
-docker build -t gcr.io/YOUR_PROJECT_ID/smart-parking-frontend:latest \
-  --build-arg REACT_APP_API_URL=http://$BACKEND_IP:8000 \
-  --build-arg REACT_APP_FIREBASE_API_KEY=AIzaSyCDkSv4pG9fePIY7zkHPcTwMF1DhoB2ADM \
-  --build-arg REACT_APP_FIREBASE_AUTH_DOMAIN=smart-city-parking-63aac.firebaseapp.com \
-  --build-arg REACT_APP_FIREBASE_PROJECT_ID=smart-city-parking-63aac \
-  --build-arg REACT_APP_FIREBASE_STORAGE_BUCKET=smart-city-parking-63aac.firebasestorage.app \
-  --build-arg REACT_APP_FIREBASE_MESSAGING_SENDER_ID=643685116547 \
-  --build-arg REACT_APP_FIREBASE_APP_ID=1:643685116547:web:eb7c7c8be5838e0e83af6f \
+### 7. Build and Deploy Frontend
+
+**Load environment variables from k8s-gke/.env:**
+
+```powershell
+# PowerShell: Load variables from k8s-gke/.env
+$env:GCP_PROJECT_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^GCP_PROJECT_ID=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_API_URL = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_API_URL=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_FIREBASE_API_KEY = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_API_KEY=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_FIREBASE_AUTH_DOMAIN = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_AUTH_DOMAIN=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_FIREBASE_PROJECT_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_PROJECT_ID=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_FIREBASE_STORAGE_BUCKET = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_STORAGE_BUCKET=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_FIREBASE_MESSAGING_SENDER_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_MESSAGING_SENDER_ID=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_FIREBASE_APP_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_APP_ID=(.+)$").Matches.Groups[1].Value
+$env:REACT_APP_FIREBASE_MEASUREMENT_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_MEASUREMENT_ID=(.+)$").Matches.Groups[1].Value
+
+# Build frontend image
+docker build -t gcr.io/$env:GCP_PROJECT_ID/smart-parking-frontend:latest `
+  --build-arg REACT_APP_API_URL=$env:REACT_APP_API_URL `
+  --build-arg REACT_APP_FIREBASE_API_KEY=$env:REACT_APP_FIREBASE_API_KEY `
+  --build-arg REACT_APP_FIREBASE_AUTH_DOMAIN=$env:REACT_APP_FIREBASE_AUTH_DOMAIN `
+  --build-arg REACT_APP_FIREBASE_PROJECT_ID=$env:REACT_APP_FIREBASE_PROJECT_ID `
+  --build-arg REACT_APP_FIREBASE_STORAGE_BUCKET=$env:REACT_APP_FIREBASE_STORAGE_BUCKET `
+  --build-arg REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$env:REACT_APP_FIREBASE_MESSAGING_SENDER_ID `
+  --build-arg REACT_APP_FIREBASE_APP_ID=$env:REACT_APP_FIREBASE_APP_ID `
+  --build-arg REACT_APP_FIREBASE_MEASUREMENT_ID=$env:REACT_APP_FIREBASE_MEASUREMENT_ID `
   smartparking
 
-docker push gcr.io/YOUR_PROJECT_ID/smart-parking-frontend:latest
+# Push to GCR
+docker push gcr.io/$env:GCP_PROJECT_ID/smart-parking-frontend:latest
 
 # Deploy frontend
 kubectl apply -f k8s-gke/frontend.yaml
@@ -118,7 +148,7 @@ kubectl apply -f k8s-gke/frontend.yaml
 kubectl get svc frontend -n smart-parking --watch
 ```
 
-### 6. Update CORS Configuration
+### 8. Update CORS Configuration
 
 ```bash
 # Get frontend external IP
@@ -130,13 +160,13 @@ kubectl apply -f k8s-gke/backend-config.yaml
 kubectl rollout restart deployment/backend -n smart-parking
 ```
 
-### 7. Create Django Superuser
+### 9. Create Django Superuser
 
 ```bash
 kubectl exec -it deployment/backend -n smart-parking -- python manage.py createsuperuser
 ```
 
-### 8. Access Your Application
+### 10. Access Your Application
 
 ```bash
 # Get frontend URL
@@ -209,6 +239,24 @@ Create `cloudbuild.yaml` for automated builds and deployments.
 - Use **preemptible nodes** for non-production workloads
 - Set up **budget alerts** in GCP Console
 
+### Scale Down When Not in Use
+
+```powershell
+# Scale down deployments to save costs
+kubectl scale deployment/backend --replicas=1 -n smart-parking
+kubectl scale deployment/predict --replicas=1 -n smart-parking
+kubectl scale deployment/frontend --replicas=1 -n smart-parking
+```
+
+### Scale Back Up
+
+```powershell
+# Scale back up for production load
+kubectl scale deployment/backend --replicas=2 -n smart-parking
+kubectl scale deployment/predict --replicas=2 -n smart-parking
+kubectl scale deployment/frontend --replicas=2 -n smart-parking
+```
+
 ## Cleanup
 
 ```bash
@@ -223,28 +271,156 @@ gcloud container images delete gcr.io/YOUR_PROJECT_ID/smart-parking-frontend:lat
 
 ## Troubleshooting
 
-### View logs
+### View Logs
 ```bash
+# Follow logs in real-time
 kubectl logs -f deployment/backend -n smart-parking
 kubectl logs -f deployment/predict -n smart-parking
 kubectl logs -f deployment/frontend -n smart-parking
+
+# View previous container logs (for crashed pods)
+kubectl logs <pod-name> -n smart-parking --previous
+
+# View logs for all pods with a label
+kubectl logs -l app=backend -n smart-parking --all-containers=true
 ```
 
-### Check pod status
-```bash
+### Monitor Resources
+```powershell
+# Check pod status
 kubectl get pods -n smart-parking
-kubectl describe pod POD_NAME -n smart-parking
+
+# Check pod resource usage
+kubectl top pods -n smart-parking
+
+# Check node resource usage
+kubectl top nodes
+
+# Get events sorted by timestamp
+kubectl get events -n smart-parking --sort-by='.lastTimestamp'
+
+# Describe a pod for detailed info
+kubectl describe pod <pod-name> -n smart-parking
 ```
 
-### Check service status
+### Check Services
 ```bash
+# List all services
 kubectl get svc -n smart-parking
+
+# Describe a service
 kubectl describe svc backend -n smart-parking
+
+# Get external IPs
+kubectl get svc -n smart-parking -o wide
 ```
 
-### Debug connectivity
+### Debug Inside Containers
 ```bash
+# Open a shell in a container
 kubectl exec -it deployment/backend -n smart-parking -- /bin/bash
+
+# Run a command in a container
+kubectl exec deployment/backend -n smart-parking -- python manage.py showmigrations
+```
+
+### Common Issues and Solutions
+
+#### Issue: Pods in CrashLoopBackOff
+**Symptoms:** Pod keeps restarting
+```powershell
+# Check logs for errors
+kubectl logs <pod-name> -n smart-parking --previous
+
+# Common causes:
+# - Database connection failures (check postgres pod is running)
+# - Missing environment variables (check configmap/secrets)
+# - Application errors (check application logs)
+```
+
+#### Issue: LoadBalancer Stuck in Pending
+**Symptoms:** External IP shows as `<pending>`
+```powershell
+# Check service details
+kubectl describe svc backend -n smart-parking
+
+# Verify GCP quotas
+gcloud compute project-info describe --project=YOUR_PROJECT_ID
+
+# Common causes:
+# - Insufficient quota for external IPs
+# - LoadBalancer not enabled in region
+# - Billing not enabled
+```
+
+#### Issue: Image Pull Errors
+**Symptoms:** Pod fails with ImagePullBackOff
+```powershell
+# Verify images exist in GCR
+gcloud container images list --repository=gcr.io/YOUR_PROJECT_ID
+
+# Re-authenticate Docker
+gcloud auth configure-docker
+
+# Check image name in deployment
+kubectl get deployment backend -n smart-parking -o yaml | Select-String "image:"
+```
+
+#### Issue: Database Connection Errors
+**Symptoms:** Backend logs show "could not connect to server"
+```powershell
+# Check PostgreSQL is running
+kubectl get pods -n smart-parking -l app=postgres
+
+# Check PostgreSQL logs
+kubectl logs -n smart-parking -l app=postgres
+
+# Verify database service
+kubectl get svc postgres -n smart-parking
+
+# Test connection from backend pod
+kubectl exec deployment/backend -n smart-parking -- nc -zv postgres 5432
+```
+
+#### Issue: CORS Errors in Browser
+**Symptoms:** Browser console shows CORS policy errors
+```powershell
+# Check current CORS configuration
+kubectl get configmap backend-config -n smart-parking -o yaml
+
+# Verify frontend IP is in CORS_ALLOWED_ORIGINS
+# Update backend-config.yaml and reapply:
+kubectl apply -f k8s-gke/backend-config.yaml
+kubectl rollout restart deployment/backend -n smart-parking
+```
+
+#### Issue: Frontend Shows API Connection Error
+**Symptoms:** Frontend can't reach backend API
+```powershell
+# Verify backend is running
+kubectl get pods -n smart-parking -l app=backend
+
+# Check backend service has external IP
+kubectl get svc backend -n smart-parking
+
+# Test backend API directly
+$BACKEND_IP = kubectl get svc backend -n smart-parking -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+Invoke-WebRequest -Uri "http://${BACKEND_IP}:8000/" -UseBasicParsing
+
+# Frontend environment variables are baked at build time
+# If backend IP changed, rebuild and redeploy frontend
+```
+
+#### Issue: Out of Memory (OOMKilled)
+**Symptoms:** Pod terminated with reason "OOMKilled"
+```powershell
+# Check resource limits
+kubectl describe pod <pod-name> -n smart-parking
+
+# Increase memory limits in deployment YAML
+# Edit backend.yaml, predict.yaml, or frontend.yaml
+# Update resources.limits.memory value
+kubectl apply -f k8s-gke/<service>.yaml
 ```
 
 ## Support

@@ -1,3 +1,6 @@
+# GKE deployment environment file
+k8s-gke/.env
+
 # Byte-compiled / optimized / DLL files
 _pycache_/
 *.py[codz]
