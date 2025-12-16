@@ -213,3 +213,9 @@ _marimo_/
 *firebase-admin*.json
 
 **.json
+
+# Kubernetes secrets - DO NOT COMMIT
+k8s/*-config.yaml
+k8s/postgres.yaml
+k8s/frontend.yaml
+k8s/secrets.yaml

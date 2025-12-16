@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: smart-parking
+data:
+  DJANGO_DEBUG: "False"
+  HOST_URL: "http://localhost:8000"
+  ALLOWED_HOSTS: "localhost,127.0.0.1,backend,predict,web"
+  CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8000"
+  DB_HOST: "db"
+  DB_PORT: "5432"
+  FORECAST_SERVICE_URL: "http://predict:8000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secret
+  namespace: smart-parking
+type: Opaque
+stringData:
+  DJANGO_SECRET_KEY: "CHANGE_ME_django_secret_key_here"
+  FIREBASE_API_KEY: "CHANGE_ME_your_firebase_api_key"
+  GOOGLE_APPLICATION_CREDENTIALS: "smart-city-parking-63aac-firebase-adminsdk-fbsvc-23699e54da.json"
+  POSTGRES_DB: "smart_city_parking_db"
+  POSTGRES_USER: "admin"
+  POSTGRES_PASSWORD: "CHANGE_ME_secure_password"
