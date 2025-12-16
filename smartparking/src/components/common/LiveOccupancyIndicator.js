@@ -24,6 +24,7 @@ const LiveOccupancyIndicator = ({
 }) => {
   const [occupancyData, setOccupancyData] = useState(null);
   const [totalSpots, setTotalSpots] = useState(providedTotalSpots || 0);
+  const [hasFirestoreError, setHasFirestoreError] = useState(false);
 
   useEffect(() => {
     if (!parkingLotId) return;
@@ -45,12 +46,22 @@ const LiveOccupancyIndicator = ({
               occupied: occupiedSpots.length,
               timestamp: latestEvent.timestamp
             });
+            setHasFirestoreError(false);
           }
+        } else {
+          // Document doesn't exist - this is normal for new parking lots
+          console.log(`No eventlist found for lot ${parkingLotId}`);
+          setOccupancyData({ occupied: 0, timestamp: null });
         }
       },
       (error) => {
         console.error(`Error listening to eventlist for lot ${parkingLotId}:`, error);
-        setOccupancyData(null);
+        console.error('Error details:', error.code, error.message);
+        setHasFirestoreError(true);
+        // Keep the last known data instead of clearing it
+        if (!occupancyData) {
+          setOccupancyData({ occupied: 0, timestamp: null });
+        }
       }
     );
 
@@ -91,6 +102,18 @@ const LiveOccupancyIndicator = ({
   // If no spots configured, don't render anything
   if (totalSpots === 0) return null;
 
+  // If Firestore error (likely auth issue), show login prompt
+  if (hasFirestoreError) {
+    return (
+      <div className={`alert ${isActive ? 'alert-light' : 'alert-warning'} py-2 px-3 mb-0`} style={{ fontSize: '0.875rem' }}>
+        <i className="bi bi-lock me-2"></i>
+        <small>
+          <a href="/login" className="alert-link">Login</a> to see live occupancy
+        </small>
+      </div>
+    );
+  }
+
   // Compact variant - just a small badge with count
   if (variant === 'compact') {
     return (
@@ -128,6 +151,11 @@ const LiveOccupancyIndicator = ({
           <small className={isActive ? 'text-white' : 'text-dark'}>
             <strong>{occupied} / {totalSpots}</strong> occupied
           </small>
+          {showLiveBadge && totalSpots > 0 && !hasFirestoreError && (
+            <span className="badge bg-info" style={{ fontSize: '0.7rem' }}>
+              <i className="bi bi-broadcast"></i> Live
+            </span>
+          )}
           {forecastButton && (
             <div onClick={(e) => e.stopPropagation()}>
               {forecastButton}

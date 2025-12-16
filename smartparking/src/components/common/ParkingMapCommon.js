@@ -138,10 +138,16 @@ const LiveMarker = ({ lot, isSelected, onSelectLot }) => {
             const occupiedSpots = latestEvent.occupied_spots || [];
             setOccupiedCount(occupiedSpots.length);
           }
+        } else {
+          // Document doesn't exist - set to 0
+          console.log(`No eventlist found for lot ${lot.id}`);
+          setOccupiedCount(0);
         }
       },
       (error) => {
         console.error(`Error listening to eventlist for lot ${lot.id}:`, error);
+        console.error('Error details:', error.code, error.message);
+        // Keep current count on error rather than clearing
       }
     );
 

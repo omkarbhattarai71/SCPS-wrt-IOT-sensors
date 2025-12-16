@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
+import { auth } from "../../Firebase";
+import { signOut } from "firebase/auth";
 import { useAdminParkingLots } from "../../hooks/useAdminParkingLots";
 import Header from "../common/Header";
 import ParkingLotList from "./ParkingLotList";
@@ -19,9 +21,15 @@ const Dashboard = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLot, setSelectedLot] = useState(null);
 
-  const handleLogout = () => {
-    setToken(null);
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setToken(null);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      showError("Failed to logout");
+    }
   };
 
   const handleBrowseParking = () => {

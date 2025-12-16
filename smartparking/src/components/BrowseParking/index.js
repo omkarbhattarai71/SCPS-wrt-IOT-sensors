@@ -8,6 +8,8 @@ import PublicParkingList from './PublicParkingList';
 import FilterBar from './FilterBar';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { auth } from '../../Firebase';
+import { signOut } from 'firebase/auth';
 
 const BrowseParking = () => {
   const navigate = useNavigate();
@@ -32,9 +34,15 @@ const BrowseParking = () => {
   });
   const { showError, showSuccess } = useNotification();
 
-  const handleLogout = () => {
-    setToken(null);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setToken(null);
+      navigate('/');
+    } catch (error) {
+      console.error("Logout error:", error);
+      showError("Failed to logout");
+    }
   };
 
   const handleGoToDashboard = () => {
