@@ -35,6 +35,24 @@ services:
       - DJANGO_DEBUG=${DJANGO_DEBUG}
       - ALLOWED_HOSTS=${API_HOST}
       - CORS_ALLOWED_ORIGINS=${API_URL}
+      - FORECAST_SERVICE_URL=${FORECAST_SERVICE_URL}
+    networks:
+      - smart-city-network
+    restart: unless-stopped
+
+  predict:
+    build:
+      context: ./backend
+      dockerfile: prediction_service/Dockerfile
+    container_name: smart-city-parking-predict
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_DEBUG=${DJANGO_DEBUG}
+      - ALLOWED_HOSTS=${API_HOST}
     networks:
       - smart-city-network
     restart: unless-stopped

@@ -90,7 +90,7 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
     try {
       // Real API call to backend
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/request-forecast/?parking_lot_id=${lotId}&hours_ahead=1`,
+        `${process.env.REACT_APP_API_URL}/request-forecast/?parking_lot_id=${lotId}&hours_ahead=1`,
         {
           method: 'GET',
           headers: {
@@ -98,21 +98,35 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
           },
         }
       );
-
+      
       if (!response.ok) {
         let errorMessage = 'Failed to fetch forecast';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (jsonError) {
-          // If error response is not JSON, try to get text
-          const errorText = await response.text();
-          errorMessage = errorText || `Server error: ${response.status}`;
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.error || errorMessage;
+          } catch (jsonError) {
+            console.error('Failed to parse error JSON:', jsonError);
+            errorMessage = `Server error: ${response.status}`;
+          }
+        } else {
+          // Response is not JSON (might be HTML error page)
+          errorMessage = responseText.substring(0, 200) || `Server error: ${response.status}`;
         }
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      // Parse the response text as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse response JSON:', parseError);
+        console.error('Response text that failed to parse:', responseText);
+        throw new Error('Invalid JSON response from server');
+      }
 
       // Validate response structure
       if (!data.forecast) {
@@ -127,7 +141,7 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
       const lotName = lot?.name || 'Parking lot';
 
       showSuccess(
-        `Forecast received for ${lotName}: ${data.forecast.predicted_occupied}/${lot?.capacity || 'N/A'} spots predicted occupied in 1 hour (${Math.round(data.forecast.confidence * 100)}% confidence)`,
+        `Forecast received for ${lotName}: ${data.forecast.predicted_occupied}/${lot?.capacity || 'N/A'} spots predicted occupied in 1 hour (${Math.round(data.forecast.confidence_score * 100)}% confidence)`,
         6000
       );
     } catch (error) {
@@ -238,7 +252,7 @@ const PublicParkingList = ({ parkingLots, loading, selectedLot, onSelectLot }) =
                           <i className="bi bi-graph-up me-1"></i>
                           1h: {forecastData[lot.id].predicted_occupied}/{lot.capacity}
                           <span className="ms-1">
-                            ({Math.round(forecastData[lot.id].confidence * 100)}%)
+                            ({Math.round(forecastData[lot.id].confidence_score * 100)}%)
                           </span>
                         </div>
                       ) : (
