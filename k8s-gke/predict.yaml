@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: predict
-        image: gcr.io/feisty-grid-481414-p2/smart-parking-predict:latest  # TODO: Update feisty-grid-481414-p2
+        image: gcr.io/feisty-grid-481414-p2/smart-parking-predict:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000

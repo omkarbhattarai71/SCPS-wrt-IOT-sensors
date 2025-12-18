@@ -45,6 +45,10 @@ gcloud container clusters create smart-parking-cluster \
 
 # Get cluster credentials
 gcloud container clusters get-credentials smart-parking-cluster --region us-central1
+
+# Verify cluster connection
+kubectl cluster-info
+kubectl get nodes
 ```
 
 ### 3. Build and Push Docker Images
@@ -66,21 +70,7 @@ docker push gcr.io/YOUR_PROJECT_ID/smart-parking-backend:latest
 docker push gcr.io/YOUR_PROJECT_ID/smart-parking-predict:latest
 ```
 
-### 4. Update Manifests
-
-Replace `YOUR_PROJECT_ID` in all YAML files:
-
-```bash
-# Linux/Mac
-sed -i 's/YOUR_PROJECT_ID/your-actual-project-id/g' k8s-gke/*.yaml
-
-# Windows PowerShell
-Get-ChildItem k8s-gke\*.yaml | ForEach-Object {
-  (Get-Content $_.FullName) -replace 'YOUR_PROJECT_ID', 'your-actual-project-id' | Set-Content $_.FullName
-}
-```
-
-### 5. Configure Environment Variables
+### 4. Configure Secrets and Environment Variables
 
 ```bash
 # Copy the example environment file
@@ -90,13 +80,22 @@ cp k8s-gke/.env.example k8s-gke/.env
 # - GCP_PROJECT_ID: Your GCP project ID
 # - Firebase configuration (from your Firebase console or root .env file)
 # - Backend IP will be filled after deploying backend (step 6)
+
+# Copy and configure database secrets
+cp k8s-gke/postgres-config.yaml.example k8s-gke/postgres-config.yaml
+# Edit postgres-config.yaml to set secure database credentials
+
+# Copy and configure backend secrets
+cp k8s-gke/backend-config.yaml.example k8s-gke/backend-config.yaml
+# Edit backend-config.yaml to set Django secret key and other configuration
 ```
 
-### 6. Deploy Backend Services
+### 5. Deploy Backend Services
 
 ```bash
 # Apply manifests in order
 kubectl apply -f k8s-gke/namespace.yaml
+kubectl apply -f k8s-gke/postgres-config.yaml
 kubectl apply -f k8s-gke/postgres.yaml
 kubectl apply -f k8s-gke/backend-config.yaml
 kubectl apply -f k8s-gke/backend.yaml
@@ -110,7 +109,7 @@ kubectl get svc backend -n smart-parking --watch
 # REACT_APP_API_URL=http://<the-ip-you-see>:8000
 ```
 
-### 7. Build and Deploy Frontend
+### 6. Build and Deploy Frontend
 
 **Load environment variables from k8s-gke/.env:**
 
@@ -148,25 +147,31 @@ kubectl apply -f k8s-gke/frontend.yaml
 kubectl get svc frontend -n smart-parking --watch
 ```
 
-### 8. Update CORS Configuration
+### 7. Update CORS Configuration
 
 ```bash
 # Get frontend external IP
 FRONTEND_IP=$(kubectl get svc frontend -n smart-parking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+echo "Frontend IP: $FRONTEND_IP"
 
-# Update backend-config.yaml CORS_ALLOWED_ORIGINS with frontend IP
-# Then reapply
+# Edit backend-config.yaml and add the frontend IP to CORS_ALLOWED_ORIGINS
+# CORS_ALLOWED_ORIGINS: "http://<frontend-ip>,http://localhost"
+
+# Reapply configuration
 kubectl apply -f k8s-gke/backend-config.yaml
 kubectl rollout restart deployment/backend -n smart-parking
+
+# Wait for backend to restart
+kubectl rollout status deployment/backend -n smart-parking
 ```
 
-### 9. Create Django Superuser
+### 8. Create Django Superuser
 
 ```bash
 kubectl exec -it deployment/backend -n smart-parking -- python manage.py createsuperuser
 ```
 
-### 10. Access Your Application
+### 9. Access Your Application
 
 ```bash
 # Get frontend URL
@@ -178,59 +183,6 @@ BACKEND_IP=$(kubectl get svc backend -n smart-parking -o jsonpath='{.status.load
 echo "Backend: http://$BACKEND_IP:8000"
 echo "Admin: http://$BACKEND_IP:8000/admin/"
 ```
-
-## Production Recommendations
-
-### 1. Use Google Secret Manager
-
-Instead of storing secrets in YAML files, use Google Secret Manager:
-
-```bash
-# Create secrets
-echo -n "your-django-secret-key" | gcloud secrets create django-secret-key --data-file=-
-echo -n "your-postgres-password" | gcloud secrets create postgres-password --data-file=-
-
-# Enable Workload Identity
-gcloud iam service-accounts create gke-smart-parking
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-  --member="serviceAccount:gke-smart-parking@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
-```
-
-### 2. Use Cloud SQL Instead of In-Cluster PostgreSQL
-
-```bash
-# Create Cloud SQL instance
-gcloud sql instances create smart-parking-db \
-  --database-version=POSTGRES_15 \
-  --tier=db-f1-micro \
-  --region=us-central1
-
-# Enable PostGIS
-gcloud sql databases create smart_city_parking_db --instance=smart-parking-db
-```
-
-### 3. Set Up HTTPS with Managed Certificates
-
-```bash
-# Reserve a static IP
-gcloud compute addresses create smart-parking-ip --global
-
-# Create managed certificate (requires domain)
-gcloud compute ssl-certificates create smart-parking-cert \
-  --domains=yourdomain.com
-```
-
-### 4. Enable Cloud Monitoring
-
-```bash
-# Install monitoring agent
-kubectl apply -f https://storage.googleapis.com/gke-release/monitoring/latest/gmp-operator.yaml
-```
-
-### 5. Set Up CI/CD with Cloud Build
-
-Create `cloudbuild.yaml` for automated builds and deployments.
 
 ## Cost Optimization
 
@@ -323,108 +275,3 @@ kubectl exec -it deployment/backend -n smart-parking -- /bin/bash
 # Run a command in a container
 kubectl exec deployment/backend -n smart-parking -- python manage.py showmigrations
 ```
-
-### Common Issues and Solutions
-
-#### Issue: Pods in CrashLoopBackOff
-**Symptoms:** Pod keeps restarting
-```powershell
-# Check logs for errors
-kubectl logs <pod-name> -n smart-parking --previous
-
-# Common causes:
-# - Database connection failures (check postgres pod is running)
-# - Missing environment variables (check configmap/secrets)
-# - Application errors (check application logs)
-```
-
-#### Issue: LoadBalancer Stuck in Pending
-**Symptoms:** External IP shows as `<pending>`
-```powershell
-# Check service details
-kubectl describe svc backend -n smart-parking
-
-# Verify GCP quotas
-gcloud compute project-info describe --project=YOUR_PROJECT_ID
-
-# Common causes:
-# - Insufficient quota for external IPs
-# - LoadBalancer not enabled in region
-# - Billing not enabled
-```
-
-#### Issue: Image Pull Errors
-**Symptoms:** Pod fails with ImagePullBackOff
-```powershell
-# Verify images exist in GCR
-gcloud container images list --repository=gcr.io/YOUR_PROJECT_ID
-
-# Re-authenticate Docker
-gcloud auth configure-docker
-
-# Check image name in deployment
-kubectl get deployment backend -n smart-parking -o yaml | Select-String "image:"
-```
-
-#### Issue: Database Connection Errors
-**Symptoms:** Backend logs show "could not connect to server"
-```powershell
-# Check PostgreSQL is running
-kubectl get pods -n smart-parking -l app=postgres
-
-# Check PostgreSQL logs
-kubectl logs -n smart-parking -l app=postgres
-
-# Verify database service
-kubectl get svc postgres -n smart-parking
-
-# Test connection from backend pod
-kubectl exec deployment/backend -n smart-parking -- nc -zv postgres 5432
-```
-
-#### Issue: CORS Errors in Browser
-**Symptoms:** Browser console shows CORS policy errors
-```powershell
-# Check current CORS configuration
-kubectl get configmap backend-config -n smart-parking -o yaml
-
-# Verify frontend IP is in CORS_ALLOWED_ORIGINS
-# Update backend-config.yaml and reapply:
-kubectl apply -f k8s-gke/backend-config.yaml
-kubectl rollout restart deployment/backend -n smart-parking
-```
-
-#### Issue: Frontend Shows API Connection Error
-**Symptoms:** Frontend can't reach backend API
-```powershell
-# Verify backend is running
-kubectl get pods -n smart-parking -l app=backend
-
-# Check backend service has external IP
-kubectl get svc backend -n smart-parking
-
-# Test backend API directly
-$BACKEND_IP = kubectl get svc backend -n smart-parking -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-Invoke-WebRequest -Uri "http://${BACKEND_IP}:8000/" -UseBasicParsing
-
-# Frontend environment variables are baked at build time
-# If backend IP changed, rebuild and redeploy frontend
-```
-
-#### Issue: Out of Memory (OOMKilled)
-**Symptoms:** Pod terminated with reason "OOMKilled"
-```powershell
-# Check resource limits
-kubectl describe pod <pod-name> -n smart-parking
-
-# Increase memory limits in deployment YAML
-# Edit backend.yaml, predict.yaml, or frontend.yaml
-# Update resources.limits.memory value
-kubectl apply -f k8s-gke/<service>.yaml
-```
-
-## Support
-
-For issues specific to GKE deployment, consult:
-- [GKE Documentation](https://cloud.google.com/kubernetes-engine/docs)
-- [GCP Status Dashboard](https://status.cloud.google.com/)

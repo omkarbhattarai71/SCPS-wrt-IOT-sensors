@@ -19,7 +19,7 @@ spec:
         command: ['sh', '-c', 'until nc -z db 5432; do echo waiting for db; sleep 2; done;']
       containers:
       - name: backend
-        image: gcr.io/feisty-grid-481414-p2/smart-parking-backend:latest  # TODO: Update feisty-grid-481414-p2
+        image: gcr.io/feisty-grid-481414-p2/smart-parking-backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -71,18 +71,4 @@ spec:
   - port: 8000
     targetPort: 8000
     name: http
-  type: LoadBalancer  # GKE will provision an external IP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: web
-  namespace: smart-parking
-spec:
-  selector:
-    app: backend
-  ports:
-  - port: 8000
-    targetPort: 8000
-    name: http
-  type: ClusterIP
+  type: LoadBalancer
