@@ -35,7 +35,7 @@ gcloud services enable containerregistry.googleapis.com
 ```bash
 # Create a regional cluster with autoscaling
 gcloud container clusters create smart-parking-cluster \
-  --region us-central1 \
+  --region eu-west1 \
   --num-nodes 3 \
   --machine-type e2-standard-2 \
   --disk-size 30 \
@@ -44,7 +44,7 @@ gcloud container clusters create smart-parking-cluster \
   --enable-autoupgrade
 
 # Get cluster credentials
-gcloud container clusters get-credentials smart-parking-cluster --region us-central1
+gcloud container clusters get-credentials smart-parking-cluster --region eu-west1
 
 # Verify cluster connection
 kubectl cluster-info
@@ -58,16 +58,13 @@ kubectl get nodes
 gcloud auth configure-docker
 
 # Build images (from repository root)
-docker build -t gcr.io/YOUR_PROJECT_ID/smart-parking-backend:latest -f backend/Dockerfile backend
-docker build -t gcr.io/YOUR_PROJECT_ID/smart-parking-predict:latest -f backend/prediction_service/Dockerfile backend
+# GKE nodes run on AMD64 architecture
+docker buildx build --platform linux/amd64 -t gcr.io/YOUR_PROJECT_ID/smart-parking-backend:latest --push -f backend/Dockerfile backend
+docker buildx build --platform linux/amd64 -t gcr.io/YOUR_PROJECT_ID/smart-parking-predict:latest --push -f backend/prediction_service/Dockerfile backend
 
 # For frontend, you need to rebuild with GKE backend URL
 # First deploy backend, get its external IP, then build frontend
-# See step 5 below
-
-# Push backend and predict images
-docker push gcr.io/YOUR_PROJECT_ID/smart-parking-backend:latest
-docker push gcr.io/YOUR_PROJECT_ID/smart-parking-predict:latest
+# See step 6 below
 ```
 
 ### 4. Configure Secrets and Environment Variables
@@ -113,32 +110,51 @@ kubectl get svc backend -n smart-parking --watch
 
 **Load environment variables from k8s-gke/.env:**
 
-```powershell
-# PowerShell: Load variables from k8s-gke/.env
-$env:GCP_PROJECT_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^GCP_PROJECT_ID=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_API_URL = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_API_URL=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_FIREBASE_API_KEY = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_API_KEY=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_FIREBASE_AUTH_DOMAIN = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_AUTH_DOMAIN=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_FIREBASE_PROJECT_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_PROJECT_ID=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_FIREBASE_STORAGE_BUCKET = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_STORAGE_BUCKET=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_FIREBASE_MESSAGING_SENDER_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_MESSAGING_SENDER_ID=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_FIREBASE_APP_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_APP_ID=(.+)$").Matches.Groups[1].Value
-$env:REACT_APP_FIREBASE_MEASUREMENT_ID = (Select-String -Path "k8s-gke\.env" -Pattern "^REACT_APP_FIREBASE_MEASUREMENT_ID=(.+)$").Matches.Groups[1].Value
+```bash
+# Bash/Zsh (macOS/Linux): Load variables from k8s-gke/.env
+# This handles files with Windows line endings (CRLF) and filters out comments
+export $(grep -v '^#' k8s-gke/.env | grep -v '^$' | tr -d '\r' | xargs)
 
-# Build frontend image
-docker build -t gcr.io/$env:GCP_PROJECT_ID/smart-parking-frontend:latest `
-  --build-arg REACT_APP_API_URL=$env:REACT_APP_API_URL `
-  --build-arg REACT_APP_FIREBASE_API_KEY=$env:REACT_APP_FIREBASE_API_KEY `
-  --build-arg REACT_APP_FIREBASE_AUTH_DOMAIN=$env:REACT_APP_FIREBASE_AUTH_DOMAIN `
-  --build-arg REACT_APP_FIREBASE_PROJECT_ID=$env:REACT_APP_FIREBASE_PROJECT_ID `
-  --build-arg REACT_APP_FIREBASE_STORAGE_BUCKET=$env:REACT_APP_FIREBASE_STORAGE_BUCKET `
-  --build-arg REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$env:REACT_APP_FIREBASE_MESSAGING_SENDER_ID `
-  --build-arg REACT_APP_FIREBASE_APP_ID=$env:REACT_APP_FIREBASE_APP_ID `
-  --build-arg REACT_APP_FIREBASE_MEASUREMENT_ID=$env:REACT_APP_FIREBASE_MEASUREMENT_ID `
+# Verify critical variables are loaded
+echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
+echo "REACT_APP_API_URL: $REACT_APP_API_URL"
+echo "REACT_APP_FIREBASE_API_KEY: ${REACT_APP_FIREBASE_API_KEY:0:20}..." # Show first 20 chars only
+
+# If variables are empty, manually export each variable:
+export GCP_PROJECT_ID=$(grep '^GCP_PROJECT_ID=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_API_URL=$(grep '^REACT_APP_API_URL=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_FIREBASE_API_KEY=$(grep '^REACT_APP_FIREBASE_API_KEY=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_FIREBASE_AUTH_DOMAIN=$(grep '^REACT_APP_FIREBASE_AUTH_DOMAIN=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_FIREBASE_PROJECT_ID=$(grep '^REACT_APP_FIREBASE_PROJECT_ID=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_FIREBASE_STORAGE_BUCKET=$(grep '^REACT_APP_FIREBASE_STORAGE_BUCKET=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$(grep '^REACT_APP_FIREBASE_MESSAGING_SENDER_ID=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_FIREBASE_APP_ID=$(grep '^REACT_APP_FIREBASE_APP_ID=' k8s-gke/.env | cut -d '=' -f2)
+export REACT_APP_FIREBASE_MEASUREMENT_ID=$(grep '^REACT_APP_FIREBASE_MEASUREMENT_ID=' k8s-gke/.env | cut -d '=' -f2)
+
+# IMPORTANT: Build frontend image for AMD64 (GKE compatibility)
+# The --no-cache flag ensures environment variables are freshly baked into the image
+# Use docker buildx for cross-platform builds on Apple Silicon
+# --no-cache ensures fresh build with current environment variables
+docker buildx build --platform linux/amd64 --no-cache \
+  -t gcr.io/$GCP_PROJECT_ID/smart-parking-frontend:latest \
+  --build-arg REACT_APP_API_URL=$REACT_APP_API_URL \
+  --build-arg REACT_APP_FIREBASE_API_KEY=$REACT_APP_FIREBASE_API_KEY \
+  --build-arg REACT_APP_FIREBASE_AUTH_DOMAIN=$REACT_APP_FIREBASE_AUTH_DOMAIN \
+  --build-arg REACT_APP_FIREBASE_PROJECT_ID=$REACT_APP_FIREBASE_PROJECT_ID \
+  --build-arg REACT_APP_FIREBASE_STORAGE_BUCKET=$REACT_APP_FIREBASE_STORAGE_BUCKET \
+  --build-arg REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$REACT_APP_FIREBASE_MESSAGING_SENDER_ID \
+  --build-arg REACT_APP_FIREBASE_APP_ID=$REACT_APP_FIREBASE_APP_ID \
+  --build-arg REACT_APP_FIREBASE_MEASUREMENT_ID=$REACT_APP_FIREBASE_MEASUREMENT_ID \
+  --push \
   smartparking
 
-# Push to GCR
-docker push gcr.io/$env:GCP_PROJECT_ID/smart-parking-frontend:latest
+# Note: --push automatically pushes to GCR after building
+# After successful build, restart the deployment to use the new image
+kubectl rollout restart deployment/frontend -n smart-parking
+kubectl rollout status deployment/frontend -n smart-parking
+
+# Verify Firebase config is in the deployed container (should show your API key)
+kubectl exec -n smart-parking deployment/frontend -- env | grep REACT_APP
 
 # Deploy frontend
 kubectl apply -f k8s-gke/frontend.yaml
@@ -213,7 +229,7 @@ kubectl scale deployment/frontend --replicas=2 -n smart-parking
 
 ```bash
 # Delete the cluster (this will delete all resources)
-gcloud container clusters delete smart-parking-cluster --region us-central1
+gcloud container clusters delete smart-parking-cluster --region eu-west1
 
 # Delete container images
 gcloud container images delete gcr.io/YOUR_PROJECT_ID/smart-parking-backend:latest --quiet

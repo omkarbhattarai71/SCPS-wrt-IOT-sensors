@@ -14,40 +14,40 @@ spec:
         app: predict
     spec:
       containers:
-      - name: predict
-        image: gcr.io/feisty-grid-481414-p2/smart-parking-predict:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8000
-          name: http
-        envFrom:
-        - configMapRef:
-            name: backend-config
-        - secretRef:
-            name: backend-secret
-        livenessProbe:
-          httpGet:
-            path: /health/
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /health/
-            port: 8000
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "2000m"
+        - name: predict
+          image: gcr.io/feisty-grid-481414-p2/smart-parking-predict:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
 ---
 apiVersion: v1
 kind: Service
@@ -58,7 +58,7 @@ spec:
   selector:
     app: predict
   ports:
-  - port: 8000
-    targetPort: 8000
-    name: http
+    - port: 8000
+      targetPort: 8000
+      name: http
   type: ClusterIP
