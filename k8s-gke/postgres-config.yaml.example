@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: smart-parking
+type: Opaque
+stringData:
+  POSTGRES_DB: smart_city_parking_db
+  POSTGRES_USER: CHANGE_ME_admin_username
+  POSTGRES_PASSWORD: CHANGE_ME_secure_password

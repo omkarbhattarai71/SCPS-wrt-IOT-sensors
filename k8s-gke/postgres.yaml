@@ -11,17 +11,6 @@ spec:
     requests:
       storage: 10Gi
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: postgres-secret
-  namespace: smart-parking
-type: Opaque
-stringData:
-  POSTGRES_DB: smart_city_parking_db
-  POSTGRES_USER: admin
-  POSTGRES_PASSWORD: CHANGE_ME_secure_password  # Generate with: openssl rand -base64 32
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -58,6 +47,8 @@ spec:
             - pg_isready
             - -U
             - admin
+            - -d
+            - smart_city_parking_db
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -68,17 +59,19 @@ spec:
             - pg_isready
             - -U
             - admin
+            - -d
+            - smart_city_parking_db
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
         resources:
           requests:
-            memory: "512Mi"
+            memory: "256Mi"
             cpu: "250m"
           limits:
-            memory: "2Gi"
-            cpu: "1000m"
+            memory: "512Mi"
+            cpu: "500m"
       volumes:
       - name: postgres-storage
         persistentVolumeClaim:

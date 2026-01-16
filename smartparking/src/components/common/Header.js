@@ -220,9 +220,9 @@ const Header = ({
                   ) : operatorRequestStatus === "rejected" ||
                     operatorRequestStatus === "cancelled" ||
                     operatorRequestStatus === null ? (
-                    "Request Operator"
+                    "Request Operator Access"
                   ) : (
-                    "Request Operator"
+                    "Request Operator Access"
                   )}
                 </button>
                 {/* Dropdown for cancel */}
