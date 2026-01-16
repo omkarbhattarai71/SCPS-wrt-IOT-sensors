@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 
-const FilterBar = ({ filters, onFilterChange, hasLocation }) => {
+const FilterBar = ({ filters, onFilterChange, hasLocation, onRequestLocation }) => {
   const [tempDistance, setTempDistance] = useState(filters.maxDistance);
   const [tempPrice, setTempPrice] = useState(filters.maxPrice);
 
@@ -120,10 +120,15 @@ const FilterBar = ({ filters, onFilterChange, hasLocation }) => {
                 <span>20 km</span>
               </div>
               {!hasLocation && (
-                <small className="text-warning">
-                  <i className="bi bi-info-circle me-1"></i>
-                  Acquiring your location...
-                </small>
+                <div className="mt-2">
+                  <button 
+                    className="btn btn-sm btn-outline-primary w-100"
+                    onClick={onRequestLocation}
+                  >
+                    <i className="bi bi-geo-alt-fill me-1"></i>
+                    Enable Location
+                  </button>
+                </div>
               )}
             </div>
 

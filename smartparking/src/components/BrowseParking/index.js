@@ -105,6 +105,12 @@ const BrowseParking = () => {
 
   const getUserLocation = () => {
     if ('geolocation' in navigator) {
+      // Check for HTTPS
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+        showError('Location access requires a secure HTTPS connection. Please use HTTPS.');
+        return;
+      }
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           if (!position.coords) {
@@ -122,7 +128,7 @@ const BrowseParking = () => {
           let errorMessage = 'Unable to get your location';
           switch(error.code) {
             case error.PERMISSION_DENIED:
-              errorMessage = 'Location permission denied';
+              errorMessage = 'Location permission denied. Please enable it in browser settings.';
               break;
             case error.POSITION_UNAVAILABLE:
               errorMessage = 'Location information unavailable';
@@ -338,6 +344,7 @@ const BrowseParking = () => {
             filters={filters}
             onFilterChange={handleFilterChange}
             hasLocation={!!userLocation}
+            onRequestLocation={getUserLocation}
           />          <div className="row" style={{ minHeight: "calc(100vh - 300px)" }}>
             <div className="col-md-4">
               <div style={{

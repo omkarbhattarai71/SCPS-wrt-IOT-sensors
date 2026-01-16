@@ -34,7 +34,7 @@ services:
         condition: service_healthy
         restart: true
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@smart-city-parking-db:5432/${POSTGRES_DB}
       - FIREBASE_API_KEY=${REACT_APP_FIREBASE_API_KEY}
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DJANGO_DEBUG=${DJANGO_DEBUG}
